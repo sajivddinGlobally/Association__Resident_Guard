@@ -1538,6 +1538,19 @@ class _GuardparcelregisterscreenState
   void initState() {
     super.initState();
     entryTime = _formatCurrentTime();
+    flatNumberController.addListener(() {
+      if (selectedFlat != null &&
+          flatNumberController.text.trim().toLowerCase() !=
+              (selectedFlat!.flatNumber ??
+                      selectedFlat!.propertyNameNumber ??
+                      '')
+                  .trim()
+                  .toLowerCase()) {
+        setState(() {
+          selectedFlat = null;
+        });
+      }
+    });
   }
 
   @override
@@ -2093,10 +2106,14 @@ class _GuardparcelregisterscreenState
                           final res = (flat.residentName ?? '').toLowerCase();
                           final ph = (flat.residentPhone ?? '').toLowerCase();
                           final loc = (flat.location ?? '').toLowerCase();
+                          final st =
+                              (flat.status ?? flat.statusBadge ?? '')
+                                  .toLowerCase();
                           return fNo.contains(q) ||
                               res.contains(q) ||
                               ph.contains(q) ||
-                              loc.contains(q);
+                              loc.contains(q) ||
+                              st.contains(q);
                         });
                       },
                       displayStringForOption: (Datum option) =>
@@ -2356,25 +2373,28 @@ class _GuardparcelregisterscreenState
                                                                           1.h,
                                                                     ),
                                                                 decoration: BoxDecoration(
-                                                                  color: const Color(
-                                                                    0xFFECFDF5,
-                                                                  ),
+                                                                  color: flat
+                                                                      .badgeBgColor,
                                                                   borderRadius:
                                                                       BorderRadius.circular(
                                                                         4.r,
                                                                       ),
+                                                                  border: Border.all(
+                                                                    color: flat
+                                                                        .badgeBorderColor,
+                                                                        width: 0.8,
+                                                                  ),
                                                                 ),
                                                                 child: Text(
-                                                                  "OCCUPIED",
+                                                                  flat.displayStatusBadge,
                                                                   style: GoogleFonts.outfit(
                                                                     fontSize:
                                                                         9.sp,
                                                                     fontWeight:
                                                                         FontWeight
                                                                             .w600,
-                                                                    color: const Color(
-                                                                      0xFF065F46,
-                                                                    ),
+                                                                    color: flat
+                                                                        .badgeTextColor,
                                                                   ),
                                                                 ),
                                                               ),
@@ -2384,13 +2404,19 @@ class _GuardparcelregisterscreenState
                                                           Row(
                                                             children: [
                                                               Icon(
-                                                                Icons
-                                                                    .person_outline_rounded,
+                                                                flat.isVacant
+                                                                    ? Icons
+                                                                        .person_off_outlined
+                                                                    : Icons
+                                                                        .person_outline_rounded,
                                                                 size: 12.sp,
-                                                                color:
-                                                                    const Color(
-                                                                      0xFF6B7280,
-                                                                    ),
+                                                                color: flat.isVacant
+                                                                    ? const Color(
+                                                                        0xFF9CA3AF,
+                                                                      )
+                                                                    : const Color(
+                                                                        0xFF6B7280,
+                                                                      ),
                                                               ),
                                                               SizedBox(
                                                                 width: 4.w,
@@ -2405,9 +2431,18 @@ class _GuardparcelregisterscreenState
                                                                   style: GoogleFonts.outfit(
                                                                     fontSize:
                                                                         12.sp,
-                                                                    color: const Color(
-                                                                      0xFF374151,
-                                                                    ),
+                                                                    color: flat.isVacant
+                                                                        ? const Color(
+                                                                            0xFF6B7280,
+                                                                          )
+                                                                        : const Color(
+                                                                            0xFF374151,
+                                                                          ),
+                                                                    fontStyle: flat.isVacant
+                                                                        ? FontStyle
+                                                                            .italic
+                                                                        : FontStyle
+                                                                            .normal,
                                                                   ),
                                                                 ),
                                                               ),
@@ -2492,7 +2527,9 @@ class _GuardparcelregisterscreenState
                                   child: Row(
                                     children: [
                                       Icon(
-                                        Icons.person_outline_rounded,
+                                        selectedFlat!.isVacant
+                                            ? Icons.person_off_outlined
+                                            : Icons.person_outline_rounded,
                                         size: 16.sp,
                                         color: AppColors.heading,
                                       ),
@@ -2507,6 +2544,9 @@ class _GuardparcelregisterscreenState
                                             fontSize: 14.sp,
                                             fontWeight: FontWeight.w600,
                                             color: AppColors.heading,
+                                            fontStyle: selectedFlat!.isVacant
+                                                ? FontStyle.italic
+                                                : FontStyle.normal,
                                           ),
                                         ),
                                       ),
@@ -2519,10 +2559,10 @@ class _GuardparcelregisterscreenState
                                     vertical: 3.h,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFECFDF5),
+                                    color: selectedFlat!.badgeBgColor,
                                     borderRadius: BorderRadius.circular(6.r),
                                     border: Border.all(
-                                      color: const Color(0xFFA7F3D0),
+                                      color: selectedFlat!.badgeBorderColor,
                                       width: 1,
                                     ),
                                   ),
@@ -2532,23 +2572,18 @@ class _GuardparcelregisterscreenState
                                       Container(
                                         width: 6.w,
                                         height: 6.w,
-                                        decoration: const BoxDecoration(
-                                          color: Color(0xFF10B981),
+                                        decoration: BoxDecoration(
+                                          color: selectedFlat!.badgeColor,
                                           shape: BoxShape.circle,
                                         ),
                                       ),
                                       SizedBox(width: 4.w),
                                       Text(
-                                        selectedFlat!.statusBadge != null
-                                            ? (statusBadgeValues
-                                                      .reverse[selectedFlat!
-                                                      .statusBadge] ??
-                                                  "OCCUPIED")
-                                            : "OCCUPIED",
+                                        selectedFlat!.displayStatusBadge,
                                         style: GoogleFonts.outfit(
                                           fontSize: 11.sp,
                                           fontWeight: FontWeight.w600,
-                                          color: const Color(0xFF065F46),
+                                          color: selectedFlat!.badgeTextColor,
                                         ),
                                       ),
                                     ],
@@ -2593,6 +2628,28 @@ class _GuardparcelregisterscreenState
                                       "Location: ${selectedFlat!.location}",
                                       style: GoogleFonts.outfit(
                                         fontSize: 13.sp,
+                                        color: const Color(0xFF6B7280),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                            if (selectedFlat!.isVacant) ...[
+                              SizedBox(height: 6.h),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.info_outline_rounded,
+                                    size: 14.sp,
+                                    color: const Color(0xFF6B7280),
+                                  ),
+                                  SizedBox(width: 6.w),
+                                  Expanded(
+                                    child: Text(
+                                      "This unit is currently vacant / unassigned.",
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 12.sp,
                                         color: const Color(0xFF6B7280),
                                       ),
                                     ),
