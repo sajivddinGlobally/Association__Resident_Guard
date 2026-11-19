@@ -6438,19 +6438,40 @@ class _AssociationHomeState extends ConsumerState<AssociationHome> {
         ? propertyScore / 10
         : propertyScore;
     final progressValue = (normalizedScore / 10).clamp(0.0, 1.0);
-    final scoreStr =
-        healthScore?.scoreDisplay?.replaceAll(' ', '') ??
-        (healthScore?.scoreOutOf10 != null
-            ? "${healthScore!.scoreOutOf10}/10"
-            : (servicePerf?.score != null && servicePerf!.score!.isNotEmpty
-                  ? (servicePerf.score!.replaceAll('%', '').trim().contains('/')
-                        ? servicePerf.score!.replaceAll('%', '').trim()
-                        : "${servicePerf.score!.replaceAll('%', '').trim()}/10")
-                  : (normalizedScore > 0
-                        ? (normalizedScore % 1 == 0
-                              ? "${normalizedScore.toInt()}/10"
-                              : "${normalizedScore.toStringAsFixed(1)}/10")
-                        : "10/10")));
+    // final scoreStr =
+    //     healthScore?.scoreDisplay?.replaceAll(' ', '') ??
+    //     (healthScore?.scoreOutOf10 != null
+    //         ? "${healthScore!.scoreOutOf10}/10"
+    //         : (servicePerf?.score != null && servicePerf!.score!.isNotEmpty
+    //               ? (servicePerf.score!.replaceAll('%', '').trim().contains('/')
+    //                     ? servicePerf.score!.replaceAll('%', '').trim()
+    //                     : "${servicePerf.score!.replaceAll('%', '').trim()}/10")
+    //               : (normalizedScore > 0
+    //                     ? (normalizedScore % 1 == 0
+    //                           ? "${normalizedScore.toInt()}/10"
+    //                           : "${normalizedScore.toStringAsFixed(1)}/10")
+    //                     : "10/10")));
+    final scoreDisplay = healthScore?.scoreDisplay?.trim();
+
+    final finalScoreStr =
+        scoreDisplay != null &&
+            scoreDisplay.isNotEmpty &&
+            scoreDisplay.toLowerCase() != 'not inspected'
+        ? scoreDisplay.replaceAll(' ', '')
+        : (healthScore?.scoreOutOf10 != null
+              ? "${healthScore!.scoreOutOf10}/10"
+              : (servicePerf?.score != null && servicePerf!.score!.isNotEmpty
+                    ? (servicePerf.score!
+                              .replaceAll('%', '')
+                              .trim()
+                              .contains('/')
+                          ? servicePerf.score!.replaceAll('%', '').trim()
+                          : "${servicePerf.score!.replaceAll('%', '').trim()}/10")
+                    : (normalizedScore > 0
+                          ? (normalizedScore % 1 == 0
+                                ? "${normalizedScore.toInt()}/10"
+                                : "${normalizedScore.toStringAsFixed(1)}/10")
+                          : "0/10")));
     final performanceStatus =
         healthScore?.tier ??
         servicePerf?.rating ??
@@ -6546,8 +6567,16 @@ class _AssociationHomeState extends ConsumerState<AssociationHome> {
                                     color: const Color(0xffD5A52C),
                                   ),
                                 ),
+                                // Text(
+                                //   scoreStr,
+                                //   style: GoogleFonts.outfit(
+                                //     fontSize: 12.sp,
+                                //     fontWeight: FontWeight.w600,
+                                //     color: const Color(0xff0D241B),
+                                //   ),
+                                // ),
                                 Text(
-                                  scoreStr,
+                                  finalScoreStr,
                                   style: GoogleFonts.outfit(
                                     fontSize: 12.sp,
                                     fontWeight: FontWeight.w600,
