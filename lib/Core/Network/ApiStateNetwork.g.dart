@@ -12,7 +12,7 @@ part of 'ApiStateNetwork.dart';
 
 class _ApiStateNetwork implements ApiStateNetwork {
   _ApiStateNetwork(this._dio, {this.baseUrl, this.errorLogger}) {
-    baseUrl ??= 'https://realestate.gwsstaging.com';
+    baseUrl ??= 'https://admin.ascentpms.care';
   }
 
   final Dio _dio;
@@ -534,6 +534,7 @@ class _ApiStateNetwork implements ApiStateNetwork {
     MultipartFile? attachment,
     String type,
     int? propertyId,
+    String? areaType,
   ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
@@ -559,6 +560,9 @@ class _ApiStateNetwork implements ApiStateNetwork {
     _data.fields.add(MapEntry('type', type));
     if (propertyId != null) {
       _data.fields.add(MapEntry('property_id', propertyId.toString()));
+    }
+    if (areaType != null) {
+      _data.fields.add(MapEntry('area_type', areaType));
     }
     final _options = _setStreamType<dynamic>(
       Options(

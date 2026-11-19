@@ -60,6 +60,11 @@ dependencies:
   url_launcher: ^6.3.2
   mobile_scanner: ^7.4.2
   qr_flutter: ^4.1.0
+  # Push notification (popup)
+  firebase_core: ^4.1.0
+  firebase_messaging: ^16.0.1
+  flutter_local_notifications: ^19.4.0
+  flutter_ringtone_player: ^4.0.0+4
 
 
 dev_dependencies:
@@ -91,6 +96,7 @@ flutter:
     - assets/
     - assets/SvgImage/
     - assets/associationImage/
+    - assets/sounds/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

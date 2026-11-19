@@ -107,6 +107,7 @@ class _CreateComplaintScreenState extends ConsumerState<CreateComplaintScreen> {
   String? selectedSubject;
   int? selectedPropertyId;
   String? selectedPropertyLabel;
+  String areaType = "inside_house";
 
   final TextEditingController customServiceController = TextEditingController();
   List<String> customServices = [];
@@ -426,7 +427,7 @@ class _CreateComplaintScreenState extends ConsumerState<CreateComplaintScreen> {
                   final uniqueUnits = units
                       .where((u) => u.id != null && seenIds.add(u.id!))
                       .toList();
-                      
+
                   final bool isValidSelection =
                       selectedPropertyId == null ||
                       uniqueUnits.any((u) => u.id == selectedPropertyId);
@@ -639,7 +640,127 @@ class _CreateComplaintScreenState extends ConsumerState<CreateComplaintScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 30.h),
+
+              SizedBox(height: 15.h),
+              Text(
+                "Issue Scope / Area",
+                style: GoogleFonts.outfit(
+                  fontSize: 19.sp,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.heading,
+                  letterSpacing: -0.2,
+                ),
+              ),
+              SizedBox(height: 10.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          areaType = "inside_house";
+                        });
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          vertical: 12.h,
+                          horizontal: 10.w,
+                        ),
+                        decoration: BoxDecoration(
+                          // color: areaType == "inside_house"
+                          //     ? const Color(0xFFF9F5EC)
+                          //     : Colors.white,
+                          borderRadius: BorderRadius.circular(10.r),
+                          border: Border.all(
+                            color: areaType == "inside_house"
+                                ? const Color(0xFFB8860B)
+                                : const Color(0xFFD9D9D0),
+                            width: areaType == "inside_house" ? 1.6 : 1.0,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("🏠", style: TextStyle(fontSize: 20.sp)),
+                            SizedBox(width: 8.w),
+                            Flexible(
+                              child: Text(
+                                "Inside Flat / House",
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 16.sp,
+                                  fontWeight: areaType == "inside_house"
+                                      ? FontWeight.w600
+                                      : FontWeight.w500,
+                                  color: areaType == "inside_house"
+                                      ? const Color(0xFF101C16)
+                                      : const Color(0xFF666666),
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          areaType = "common_area";
+                        });
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          vertical: 12.h,
+                          horizontal: 10.w,
+                        ),
+                        decoration: BoxDecoration(
+                          // color: areaType == "common_area"
+                          //     ? const Color(0xFFF9F5EC)
+                          //     : Colors.white,
+                          borderRadius: BorderRadius.circular(10.r),
+                          border: Border.all(
+                            color: areaType == "common_area"
+                                ? const Color(0xFFB8860B)
+                                : const Color(0xFFD9D9D0),
+                            width: areaType == "common_area" ? 1.6 : 1.0,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("🏢", style: TextStyle(fontSize: 20.sp)),
+                            SizedBox(width: 8.w),
+                            Flexible(
+                              child: Text(
+                                "Common Area",
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 16.sp,
+                                  fontWeight: areaType == "common_area"
+                                      ? FontWeight.w600
+                                      : FontWeight.w500,
+                                  color: areaType == "common_area"
+                                      ? const Color(0xFF101C16)
+                                      : const Color(0xFF666666),
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              SizedBox(height: 15.h),
               Text(
                 "Priority",
                 style: GoogleFonts.outfit(
@@ -845,6 +966,7 @@ class _CreateComplaintScreenState extends ConsumerState<CreateComplaintScreen> {
                         preferredTime: null,
                         serviceType: null,
                         propertyId: resolvedPropertyId,
+                        areaType: areaType,
                       );
                       ref.invalidate(getComplaintProvider);
                       if (mounted) {

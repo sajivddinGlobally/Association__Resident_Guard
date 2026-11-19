@@ -1,3 +1,95 @@
+// // // To parse this JSON data, do
+// // //
+// // //     final addUnitBodyModel = addUnitBodyModelFromJson(jsonString);
+
+// // import 'dart:convert';
+
+// // AddUnitBodyModel addUnitBodyModelFromJson(String str) => AddUnitBodyModel.fromJson(json.decode(str));
+
+// // String addUnitBodyModelToJson(AddUnitBodyModel data) => json.encode(data.toJson());
+
+// // class AddUnitBodyModel {
+// //     String? unitNumber;
+// //     String? location;
+// //     String? floor;
+// //     String? area;
+// //     String? bedrooms;
+// //     String? block;
+
+// //     AddUnitBodyModel({
+// //         this.unitNumber,
+// //         this.location,
+// //         this.floor,
+// //         this.area,
+// //         this.bedrooms,
+// //         this.block,
+// //     });
+
+// //     factory AddUnitBodyModel.fromJson(Map<String, dynamic> json) => AddUnitBodyModel(
+// //         unitNumber: json["unit_number"],
+// //         location: json["location"],
+// //         floor: json["floor"],
+// //         area: json["area"],
+// //         bedrooms: json["bedrooms"],
+// //         block: json["block"],
+// //     );
+
+// //     Map<String, dynamic> toJson() => {
+// //         "unit_number": unitNumber,
+// //         "location": location,
+// //         "floor": floor,
+// //         "area": area,
+// //         "bedrooms": bedrooms,
+// //         "block": block,
+// //     };
+// // }
+
+// // To parse this JSON data, do
+// //
+// //     final addUnitBodyModel = addUnitBodyModelFromJson(jsonString);
+
+// import 'dart:convert';
+
+// AddUnitBodyModel addUnitBodyModelFromJson(String str) => AddUnitBodyModel.fromJson(json.decode(str));
+
+// String addUnitBodyModelToJson(AddUnitBodyModel data) => json.encode(data.toJson());
+
+// class AddUnitBodyModel {
+//     String? unitNumber;
+//     String? block; // "Block A", "Block B" ... (complex ke blocks mein se)
+//     String? location;
+//     String? floor;
+//     String? area;
+//     String? bedrooms;
+
+//     AddUnitBodyModel({
+//         this.unitNumber,
+//         this.block,
+//         this.location,
+//         this.floor,
+//         this.area,
+//         this.bedrooms,
+//     });
+
+//     factory AddUnitBodyModel.fromJson(Map<String, dynamic> json) => AddUnitBodyModel(
+//         unitNumber: json["unit_number"],
+//         block: json["block"],
+//         location: json["location"],
+//         floor: json["floor"],
+//         area: json["area"],
+//         bedrooms: json["bedrooms"],
+//     );
+
+//     Map<String, dynamic> toJson() => {
+//         "unit_number": unitNumber,
+//         "block": block,
+//         "location": location,
+//         "floor": floor,
+//         "area": area,
+//         "bedrooms": bedrooms,
+//     };
+// }
+
 // // To parse this JSON data, do
 // //
 // //     final addUnitBodyModel = addUnitBodyModelFromJson(jsonString);
@@ -61,6 +153,10 @@ class AddUnitBodyModel {
     String? floor;
     String? area;
     String? bedrooms;
+    // Poori unit details (optional)
+    String? electricityMeterNo;
+    String? waterConnectionNo;
+    String? municipalityNumber;
 
     AddUnitBodyModel({
         this.unitNumber,
@@ -69,6 +165,9 @@ class AddUnitBodyModel {
         this.floor,
         this.area,
         this.bedrooms,
+        this.electricityMeterNo,
+        this.waterConnectionNo,
+        this.municipalityNumber,
     });
 
     factory AddUnitBodyModel.fromJson(Map<String, dynamic> json) => AddUnitBodyModel(
@@ -78,6 +177,9 @@ class AddUnitBodyModel {
         floor: json["floor"],
         area: json["area"],
         bedrooms: json["bedrooms"],
+        electricityMeterNo: json["electricity_meter_no"],
+        waterConnectionNo: json["water_connection_no"],
+        municipalityNumber: json["municipality_number"],
     );
 
     Map<String, dynamic> toJson() => {
@@ -87,5 +189,8 @@ class AddUnitBodyModel {
         "floor": floor,
         "area": area,
         "bedrooms": bedrooms,
+        "electricity_meter_no": electricityMeterNo,
+        "water_connection_no": waterConnectionNo,
+        "municipality_number": municipalityNumber,
     };
 }

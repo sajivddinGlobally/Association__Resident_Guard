@@ -57,7 +57,7 @@ class _AssociationAddAnnouncementScreenState
       final service = ref.read(authServiceProvider);
 
       // Calling the Add Announcement API:
-      // POST: https://realestate.gwsstaging.com/api/v1/committee/announcements
+      // POST: https://admin.ascentpms.care/api/v1/committee/announcements
       final response = await service.addAnnouncement(
         title: _titleController.text.trim(),
         message: _messageController.text.trim(),

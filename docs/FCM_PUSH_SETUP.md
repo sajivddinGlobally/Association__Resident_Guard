@@ -49,7 +49,7 @@ class PushService {
   static Future<void> _sendToken(String token) async {
     try {
       await createDio().post(
-        'https://realestate.gwsstaging.com/api/v1/auth/fcm-token',
+        'https://admin.ascentpms.care/api/v1/auth/fcm-token',
         data: {'fcm_token': token},
       );
     } catch (_) {}

@@ -79,7 +79,7 @@ class _InspectionReportDetailsScreenState
         final clean = resolvedUrl.startsWith('/')
             ? resolvedUrl.substring(1)
             : resolvedUrl;
-        resolvedUrl = 'https://realestate.gwsstaging.com/public/$clean';
+        resolvedUrl = 'https://admin.ascentpms.care/public/$clean';
       }
 
       final uri = Uri.tryParse(resolvedUrl);
@@ -520,7 +520,7 @@ class _InspectionReportDetailsScreenState
             final clean = checklistPdfUrl.startsWith("/")
                 ? checklistPdfUrl.substring(1)
                 : checklistPdfUrl;
-            checklistPdfUrl = "https://realestate.gwsstaging.com/public/$clean";
+            checklistPdfUrl = "https://admin.ascentpms.care/public/$clean";
           }
 
           // Attachments logic:
@@ -538,7 +538,7 @@ class _InspectionReportDetailsScreenState
             final clean = attachedPdf.startsWith("/")
                 ? attachedPdf.substring(1)
                 : attachedPdf;
-            attachedPdf = "https://realestate.gwsstaging.com/public/$clean";
+            attachedPdf = "https://admin.ascentpms.care/public/$clean";
           }
 
           final rawImages =
@@ -554,7 +554,7 @@ class _InspectionReportDetailsScreenState
             final clean = trimmed.startsWith("/")
                 ? trimmed.substring(1)
                 : trimmed;
-            return "https://realestate.gwsstaging.com/public/$clean";
+            return "https://admin.ascentpms.care/public/$clean";
           }).toList();
 
           final bool hasAttachedPdf =

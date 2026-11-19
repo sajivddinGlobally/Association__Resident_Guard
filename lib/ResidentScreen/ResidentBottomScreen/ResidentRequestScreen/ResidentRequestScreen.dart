@@ -145,110 +145,124 @@ class _ResidentrequestscreenState extends ConsumerState<Residentrequestscreen> {
               .toList();
           final isServiceTab = selectedType == 'service_request';
 
-          return Padding(
-            padding: EdgeInsets.symmetric(horizontal: 18.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 20.h),
-                Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(16.w),
-                  decoration: BoxDecoration(
-                    color: const Color.fromRGBO(184, 134, 11, 0.2),
-                    borderRadius: BorderRadius.circular(14.r),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 36.w,
-                        height: 36.w,
-                        decoration: BoxDecoration(
-                          color: const Color.fromRGBO(184, 134, 11, 0.3),
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
-                        child: Icon(
-                          Icons.description,
-                          size: 20.sp,
-                          color: const Color(0xffB8860B),
-                        ),
-                      ),
-                      SizedBox(width: 10.w),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              data.data?.registeredApartment?.label ??
-                                  "REGISTERED APARTMENT",
-                              style: GoogleFonts.outfit(
-                                fontSize: 15.sp,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.heading,
-                                letterSpacing: -0.2,
-                              ),
-                            ),
-                            SizedBox(height: 2.h),
-                            Text(
-                              data.data?.registeredApartment?.text ?? "N/A",
-                              style: GoogleFonts.outfit(
-                                fontSize: 17.sp,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.heading,
-                                letterSpacing: -0.2,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 16.h),
-                _typeSwitcher(allRequests),
-                SizedBox(height: 12.h),
-                Container(
-                  padding: EdgeInsets.all(6.w),
-                  decoration: BoxDecoration(
-                    color: AppColors.scaffoldBg,
-                    borderRadius: BorderRadius.circular(10.r),
-                    border: Border.all(
-                      color: const Color(0xff101C16),
-                      width: 1.w,
-                    ),
-                  ),
-                  child: Row(
-                    children: filterTabs.map((tab) {
-                      final tabKey = tab.key ?? "all";
-                      final isSelected = selectedFilter == tabKey;
-                      final String tabLabel = tab.label ?? tabKey;
-                      return _tab(tabLabel, tabKey, isSelected);
-                    }).toList(),
-                  ),
-                ),
-                SizedBox(height: 20.h),
-                if (visibleRequests.isEmpty)
-                  SizedBox(
+          return RefreshIndicator(
+            color: AppColors.heading,
+            backgroundColor: AppColors.scaffoldBg,
+            onRefresh: () async {
+              return ref.refresh(
+                getComplaintListProvider(selectedFilter).future,
+              );
+            },
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 18.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 20.h),
+                  Container(
                     width: double.infinity,
-                    height: MediaQuery.of(context).size.height / 2,
-                    child: Center(
-                      child: Text(
-                        isServiceTab
-                            ? "No service requests found"
-                            : "No complaints found",
-                        style: GoogleFonts.outfit(
-                          fontSize: 17.sp,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.heading,
-                          letterSpacing: -0.2,
+                    padding: EdgeInsets.all(16.w),
+                    decoration: BoxDecoration(
+                      color: const Color.fromRGBO(184, 134, 11, 0.2),
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 36.w,
+                          height: 36.w,
+                          decoration: BoxDecoration(
+                            color: const Color.fromRGBO(184, 134, 11, 0.3),
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
+                          child: Icon(
+                            Icons.description,
+                            size: 20.sp,
+                            color: const Color(0xffB8860B),
+                          ),
                         ),
-                      ),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                data.data?.registeredApartment?.label ??
+                                    "REGISTERED APARTMENT",
+                                style: GoogleFonts.outfit(
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.heading,
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                              SizedBox(height: 2.h),
+                              Text(
+                                data.data?.registeredApartment?.text ?? "N/A",
+                                style: GoogleFonts.outfit(
+                                  fontSize: 17.sp,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.heading,
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: visibleRequests.length,
-                    itemBuilder: (context, index) {
+                  SizedBox(height: 16.h),
+                  _typeSwitcher(allRequests),
+                  SizedBox(height: 12.h),
+                  Container(
+                    padding: EdgeInsets.all(6.w),
+                    decoration: BoxDecoration(
+                      color: AppColors.scaffoldBg,
+                      borderRadius: BorderRadius.circular(10.r),
+                      border: Border.all(
+                        color: const Color(0xff101C16),
+                        width: 1.w,
+                      ),
+                    ),
+                    child: Row(
+                      children: filterTabs.map((tab) {
+                        final tabKey = tab.key ?? "all";
+                        final isSelected = selectedFilter == tabKey;
+                        final String tabLabel = tab.label ?? tabKey;
+                        return _tab(tabLabel, tabKey, isSelected);
+                      }).toList(),
+                    ),
+                  ),
+                  SizedBox(height: 20.h),
+                  Expanded(
+                    child: visibleRequests.isEmpty
+                        ? ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            children: [
+                              SizedBox(
+                                width: double.infinity,
+                                height: MediaQuery.of(context).size.height / 2,
+                                child: Center(
+                                  child: Text(
+                                    isServiceTab
+                                        ? "No service requests found"
+                                        : "No complaints found",
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 17.sp,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.heading,
+                                      letterSpacing: -0.2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : ListView.builder(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemCount: visibleRequests.length,
+                            itemBuilder: (context, index) {
                       final request = visibleRequests[index];
                       return InkWell(
                         onTap: () {
@@ -714,10 +728,28 @@ class _ResidentrequestscreenState extends ConsumerState<Residentrequestscreen> {
                 ),
               ],
             ),
+          ),
+        );
+      },
+      error: (error, stackTrace) {
+          return RefreshIndicator(
+            color: AppColors.heading,
+            backgroundColor: AppColors.scaffoldBg,
+            onRefresh: () async {
+              return ref.refresh(
+                getComplaintListProvider(selectedFilter).future,
+              );
+            },
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.height / 2,
+                  child: Center(child: Text(error.toString())),
+                ),
+              ],
+            ),
           );
-        },
-        error: (error, stackTrace) {
-          return Center(child: Text(error.toString()));
         },
         loading: () {
           return Center(

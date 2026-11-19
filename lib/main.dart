@@ -12,10 +12,14 @@ import 'package:property_association_or_resident/GuardScreen/GuardHomeScreen/Gua
 import 'package:property_association_or_resident/ResidentScreen/ResidentHomeScreen/ResidentHomeScreen.dart';
 import 'package:property_association_or_resident/splash_screen.dart';
 
+import 'Core/PushNotificationService/PushNotificationService.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   await Hive.openBox("associationdata");
+  // Push notification (popup) - fail ho to bhi app normal khulegi
+  await PushNotificationService.init();
   runApp(ProviderScope(child: const MyApp()));
 }
 
@@ -51,15 +55,17 @@ class MyApp extends StatelessWidget {
               theme: ThemeData(
                 colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
               ),
-            home: token == null
-    ? const SplashScreen()
-    : (role != null &&
-            role.toString().toLowerCase().contains("resident")
-        ? const ResidentBottomNavBar()
-        : (role != null &&
-                role.toString().toLowerCase().contains("security")
-            ? GuardBottomNavState()
-            : const AssociationBottomNavBar())),
+              home: token == null
+                  ? const SplashScreen()
+                  : (role != null &&
+                            role.toString().toLowerCase().contains("resident")
+                        ? const ResidentBottomNavBar()
+                        : (role != null &&
+                                  role.toString().toLowerCase().contains(
+                                    "security",
+                                  )
+                              ? GuardBottomNavState()
+                              : const AssociationBottomNavBar())),
             ),
           ),
         );

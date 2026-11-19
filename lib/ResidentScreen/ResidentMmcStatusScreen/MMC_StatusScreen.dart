@@ -8,6 +8,7 @@ import 'package:property_association_or_resident/Core/Utils/showMessage.dart';
 import 'package:property_association_or_resident/ResidentScreen/Model/ResidentMmcStatusResModel.dart';
 import 'package:property_association_or_resident/ResidentScreen/ResidentMmcStatusScreen/MaintenanceActivitiesScreen.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'Provider/ResidentMmcStatusProvider.dart';
 
@@ -192,6 +193,12 @@ class _MmcStatusscreenState extends ConsumerState<MmcStatusscreen> {
                       data: data,
                     ),
                     SizedBox(height: 20.h),
+                  ],
+
+                  // 6. Payment Receipts (month + paid amount, View / Download)
+                  if (data.data.receipts.isNotEmpty) ...[
+                    _buildReceiptsSection(data.data.receipts),
+                    SizedBox(height: 24.h),
                   ],
                 ],
               ),
@@ -772,6 +779,160 @@ class _MmcStatusscreenState extends ConsumerState<MmcStatusscreen> {
   }
 
   // --- Pending Dues Breakdown Section ---
+  Future<void> _openReceiptLink(String? url) async {
+    if (url == null || url.isEmpty) {
+      showErrorSnackBar(
+        "Receipt is not available right now. Pull down to refresh.",
+      );
+      return;
+    }
+    try {
+      final ok = await launchUrl(
+        Uri.parse(url),
+        mode: LaunchMode.externalApplication,
+      );
+      if (!ok) showErrorSnackBar("Unable to open the receipt.");
+    } catch (_) {
+      showErrorSnackBar("Unable to open the receipt.");
+    }
+  }
+
+  /// Resident ki payment receipts: month, jama hua amount, tareekh + View / Download
+  Widget _buildReceiptsSection(List<MmcReceiptItem> receipts) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Payment Receipts",
+          style: GoogleFonts.outfit(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w600,
+            color: AppColors.heading,
+            letterSpacing: -0.2,
+          ),
+        ),
+        SizedBox(height: 10.h),
+        ...receipts.map((r) {
+          final sub = [
+            r.paidOn ?? "",
+            r.paidVia ?? "",
+          ].where((s) => s.isNotEmpty).join(" · ");
+          return Container(
+            margin: EdgeInsets.only(bottom: 10.h),
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10.r),
+              border: Border.all(color: const Color.fromRGBO(0, 0, 0, 0.12)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              r.month.isNotEmpty ? r.month : r.receiptNo,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.outfit(
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.heading,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8.w,
+                              vertical: 2.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                                  (r.isFullPayment
+                                          ? const Color(0xFF22C55E)
+                                          : const Color(0xFFF59E0B))
+                                      .withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(20.r),
+                            ),
+                            child: Text(
+                              r.isFullPayment ? "Full" : "Part",
+                              style: GoogleFonts.outfit(
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.w600,
+                                color: r.isFullPayment
+                                    ? const Color(0xFF15803D)
+                                    : const Color(0xFFB45309),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 3.h),
+                      Text(
+                        "Paid ${r.formattedAmount}",
+                        style: GoogleFonts.outfit(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF15803D),
+                        ),
+                      ),
+                      if (sub.isNotEmpty) ...[
+                        SizedBox(height: 2.h),
+                        Text(
+                          sub,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.outfit(
+                            fontSize: 12.sp,
+                            color: const Color.fromRGBO(42, 41, 51, 0.7),
+                          ),
+                        ),
+                      ],
+                      if (r.receiptNo.isNotEmpty)
+                        Text(
+                          "Receipt: ${r.receiptNo}",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.outfit(
+                            fontSize: 11.sp,
+                            color: const Color.fromRGBO(42, 41, 51, 0.55),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  tooltip: "View receipt",
+                  onPressed: () => _openReceiptLink(r.receiptUrl),
+                  icon: Icon(
+                    Icons.visibility_outlined,
+                    size: 22.sp,
+                    color: AppColors.heading,
+                  ),
+                ),
+                IconButton(
+                  tooltip: "Download receipt",
+                  onPressed: () =>
+                      _openReceiptLink(r.receiptDownloadUrl ?? r.receiptUrl),
+                  icon: Icon(
+                    Icons.download_outlined,
+                    size: 22.sp,
+                    color: AppColors.heading,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
   Widget _buildPendingDuesSection(
     BuildContext context, {
     required PendingDuesSummary pendingSummary,

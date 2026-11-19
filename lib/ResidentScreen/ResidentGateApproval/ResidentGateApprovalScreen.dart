@@ -251,27 +251,27 @@ class _ResidentGateApprovalScreenState
                       ),
                     ),
                     SizedBox(height: 4.h),
-                    Text(
-                      "Tell this 4-digit code to the guard",
-                      style: GoogleFonts.outfit(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFFB8860B),
-                      ),
-                    ),
-                    if (qrUrl != null && qrUrl.isNotEmpty) ...[
-                      SizedBox(height: 12.h),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8.r),
-                        child: Image.network(
-                          qrUrl,
-                          height: 110.h,
-                          width: 110.h,
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => const SizedBox(),
-                        ),
-                      ),
-                    ],
+                    // Text(
+                    //   "Tell this 4-digit code to the guard",
+                    //   style: GoogleFonts.outfit(
+                    //     fontSize: 12.sp,
+                    //     fontWeight: FontWeight.w500,
+                    //     color: const Color(0xFFB8860B),
+                    //   ),
+                    // ),
+                    // if (qrUrl != null && qrUrl.isNotEmpty) ...[
+                    //   SizedBox(height: 12.h),
+                    //   ClipRRect(
+                    //     borderRadius: BorderRadius.circular(8.r),
+                    //     child: Image.network(
+                    //       qrUrl,
+                    //       height: 110.h,
+                    //       width: 110.h,
+                    //       fit: BoxFit.contain,
+                    //       errorBuilder: (_, __, ___) => const SizedBox(),
+                    //     ),
+                    //   ),
+                    // ],
                   ],
                 ),
               ),
@@ -1259,7 +1259,7 @@ class _ResidentGateApprovalScreenState
                           borderRadius: BorderRadius.circular(6.r),
                         ),
                         child: Text(
-                          "View QR",
+                          "View OTP and Share",
                           style: GoogleFonts.outfit(
                             fontSize: 11.sp,
                             fontWeight: FontWeight.w700,

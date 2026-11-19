@@ -1094,7 +1094,7 @@ class _MantenanceServiceDetailsState
         final clean = resolvedUrl.startsWith('/')
             ? resolvedUrl.substring(1)
             : resolvedUrl;
-        resolvedUrl = 'https://realestate.gwsstaging.com/public/$clean';
+        resolvedUrl = 'https://admin.ascentpms.care/public/$clean';
       }
 
       final uri = Uri.tryParse(resolvedUrl);

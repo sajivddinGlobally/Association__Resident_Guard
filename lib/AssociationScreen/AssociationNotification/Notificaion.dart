@@ -401,7 +401,8 @@ class _NotificationState extends ConsumerState<Notification> {
   }
 
   Widget _buildNotificationCard(notif_model.Notification item) {
-    final bool isOverdue = item.isOverdue == true ||
+    final bool isOverdue =
+        item.isOverdue == true ||
         (item.redTag != null && item.redTag!.trim().isNotEmpty);
 
     final Color overdueColor = _parseBadgeColor(
@@ -409,12 +410,13 @@ class _NotificationState extends ConsumerState<Notification> {
       defaultColor: const Color(0xFFEF4444),
     );
 
-    final String headingBadgeText = (item.headingReminderTag != null &&
+    final String headingBadgeText =
+        (item.headingReminderTag != null &&
             item.headingReminderTag!.trim().isNotEmpty)
         ? item.headingReminderTag!.trim()
         : (item.redTag != null && item.redTag!.trim().isNotEmpty)
-            ? item.redTag!.trim()
-            : "OVERDUE REMINDER";
+        ? item.redTag!.trim()
+        : "OVERDUE REMINDER";
 
     return GestureDetector(
       onTap: () => _onNotificationTap(item),
@@ -422,7 +424,9 @@ class _NotificationState extends ConsumerState<Notification> {
         width: double.infinity,
         margin: EdgeInsets.only(bottom: 16.h),
         decoration: BoxDecoration(
-          color: isOverdue ? overdueColor.withOpacity(0.04) : Colors.transparent,
+          color: isOverdue
+              ? overdueColor.withOpacity(0.04)
+              : Colors.transparent,
           border: Border.all(
             color: isOverdue
                 ? overdueColor.withOpacity(0.5)
@@ -511,8 +515,9 @@ class _NotificationState extends ConsumerState<Notification> {
                                           ),
                                           decoration: BoxDecoration(
                                             color: overdueColor,
-                                            borderRadius:
-                                                BorderRadius.circular(4.r),
+                                            borderRadius: BorderRadius.circular(
+                                              4.r,
+                                            ),
                                           ),
                                           child: Text(
                                             headingBadgeText.toUpperCase(),
@@ -533,8 +538,12 @@ class _NotificationState extends ConsumerState<Notification> {
                                   style: GoogleFonts.outfit(
                                     fontSize: 13.sp,
                                     fontWeight: FontWeight.w500,
-                                    color:
-                                        const Color.fromRGBO(42, 41, 51, 0.75),
+                                    color: const Color.fromRGBO(
+                                      42,
+                                      41,
+                                      51,
+                                      0.75,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -542,8 +551,8 @@ class _NotificationState extends ConsumerState<Notification> {
                             SizedBox(height: 5.h),
                             Text(
                               item.message ?? "",
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                              // maxLines: 2,
+                              // overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.outfit(
                                 fontSize: 14.sp,
                                 fontWeight: FontWeight.w500,
@@ -571,7 +580,9 @@ class _NotificationState extends ConsumerState<Notification> {
                               ),
                               child: Text(
                                 isOverdue
-                                    ? (item.redTag ?? item.tag ?? "Overdue Reminder")
+                                    ? (item.redTag ??
+                                          item.tag ??
+                                          "Overdue Reminder")
                                     : (item.tag ?? "General"),
                                 style: GoogleFonts.outfit(
                                   fontSize: 13.sp,

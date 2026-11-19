@@ -19,6 +19,7 @@ import 'package:property_association_or_resident/GuardScreen/GuardBottomScreen/V
 import '../GuardBottomScreen/GuardProfileScreen/guardProfileScreen.dart';
 import '../GuardNotificationScreen/GuardNotificationScreen.dart';
 import '../GuardAnnouncementScreen/GuardAnnouncementScreen.dart';
+import 'GuardInventoryScreen.dart';
 
 class GuardBottomNavState extends StatefulWidget {
   const GuardBottomNavState({super.key});
@@ -775,17 +776,32 @@ class _GuardhomescreenState extends ConsumerState<Guardhomescreen> {
                               );
                             },
                           ),
+                          // _infoCard(
+                          //   icon: Icons.campaign_outlined,
+                          //   title: "Notice Board",
+                          //   subtitle:
+                          //       "Gate standing orders, shift SOPs & notices",
+                          //   onTap: () {
+                          //     Navigator.push(
+                          //       context,
+                          //       CupertinoPageRoute(
+                          //         builder: (context) =>
+                          //             const GuardAnnouncementScreen(),
+                          //       ),
+                          //     );
+                          //   },
+                          // ),
+                          // Society store: saamaan kitna hai (sirf dekhna) + kam ho to Association ko request
                           _infoCard(
-                            icon: Icons.campaign_outlined,
-                            title: "Notice Board",
-                            subtitle:
-                                "Gate standing orders, shift SOPs & notices",
+                            icon: Icons.store_mall_directory_outlined,
+                            title: "Inventory",
+                            subtitle: "Check store stock & alert association",
                             onTap: () {
                               Navigator.push(
                                 context,
                                 CupertinoPageRoute(
                                   builder: (context) =>
-                                      const GuardAnnouncementScreen(),
+                                      const GuardInventoryScreen(),
                                 ),
                               );
                             },

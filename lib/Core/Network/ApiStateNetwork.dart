@@ -105,7 +105,8 @@ import '../data/model/ResponseModel/editProfileResModel.dart';
 
 part 'ApiStateNetwork.g.dart';
 
-@RestApi(baseUrl: "https://realestate.gwsstaging.com")
+@RestApi(baseUrl: "https://admin.ascentpms.care")
+// @RestApi(baseUrl: "https://realestate.gwsstaging.com")
 abstract class ApiStateNetwork {
   factory ApiStateNetwork(Dio dio, {String baseUrl}) = _ApiStateNetwork;
 
@@ -195,6 +196,7 @@ abstract class ApiStateNetwork {
     @Part(name: "attachment") MultipartFile? attachment,
     @Part(name: "type") String type,
     @Part(name: "property_id") int? propertyId,
+    @Part(name: "area_type") String? areaType,
   );
 
   @GET("/api/v1/committee/service-requests/{id}/tracking")

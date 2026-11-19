@@ -408,7 +408,7 @@
 //     try {
 //       if (dio != null) {
 //         final res = await dio!.post(
-//           "https://realestate.gwsstaging.com/api/v1/committee/maintenance/$id/status",
+//           "https://admin.ascentpms.care/api/v1/committee/maintenance/$id/status",
 //           data: {
 //             "status": status,
 //             if (notes != null && notes.isNotEmpty) "notes": notes,
@@ -436,7 +436,7 @@
 //   }) async {
 //     try {
 //       final res = await dio!.get(
-//         "https://realestate.gwsstaging.com/api/v1/committee/visitor-logs",
+//         "https://admin.ascentpms.care/api/v1/committee/visitor-logs",
 //         queryParameters: {
 //           if (dateFrom != null && dateFrom.isNotEmpty) "date_from": dateFrom,
 //           if (dateTo != null && dateTo.isNotEmpty) "date_to": dateTo,
@@ -509,10 +509,12 @@
 //     required String bedroom,
 //     required String floor,
 //     required String location,
+//     String? block, // Block dropdown se ("Block A" ...)
 //   }) async {
 //     try {
 //       final body = AddUnitBodyModel(
 //         unitNumber: name,
+//         block: block,
 //         area: area,
 //         bedrooms: bedroom,
 //         floor: floor,
@@ -540,7 +542,7 @@
 //     try {
 //       if (dio != null) {
 //         final res = await dio!.post(
-//           "https://realestate.gwsstaging.com/api/v1/committee/charges/defaulters/$id/send-reminder",
+//           "https://admin.ascentpms.care/api/v1/committee/charges/defaulters/$id/send-reminder",
 //           data: {},
 //         );
 //         return res.data;
@@ -563,7 +565,7 @@
 //       if (dio != null) {
 //         final num? parsedAmount = num.tryParse(amount.toString());
 //         final res = await dio!.post(
-//           "https://realestate.gwsstaging.com/api/v1/committee/charges/defaulters/$id/receive-pay",
+//           "https://admin.ascentpms.care/api/v1/committee/charges/defaulters/$id/receive-pay",
 //           data: {
 //             "paid_via": paidVia,
 //             "amount": parsedAmount ?? amount,
@@ -584,7 +586,7 @@
 //     try {
 //       if (dio != null) {
 //         final res = await dio!.post(
-//           "https://realestate.gwsstaging.com/api/v1/committee/charges/defaulters/$id/toggle-status",
+//           "https://admin.ascentpms.care/api/v1/committee/charges/defaulters/$id/toggle-status",
 //           data: {},
 //         );
 //         return res.data;
@@ -1528,7 +1530,7 @@
 
 //   /// ==========================================
 //   /// COMMITTEE ADD ANNOUNCEMENT API
-//   /// POST: https://realestate.gwsstaging.com/api/v1/committee/announcements
+//   /// POST: https://admin.ascentpms.care/api/v1/committee/announcements
 //   /// ==========================================
 //   Future<AddAnnouncementResModel> addAnnouncement({
 //     required String title,
@@ -1552,7 +1554,7 @@
 
 //       if (dio != null) {
 //         final res = await dio!.post(
-//           "https://realestate.gwsstaging.com/api/v1/committee/announcements",
+//           "https://admin.ascentpms.care/api/v1/committee/announcements",
 //           data: body.toJson(),
 //         );
 //         log("Add Announcement Response: ${res.data}");
@@ -1568,13 +1570,13 @@
 
 //   /// ==========================================
 //   /// COMMITTEE GET ANNOUNCEMENTS API
-//   /// GET: https://realestate.gwsstaging.com/api/v1/committee/announcements
+//   /// GET: https://admin.ascentpms.care/api/v1/committee/announcements
 //   /// ==========================================
 //   Future<GetCommitteeAnnouncementModel> getCommitteeAnnouncements() async {
 //     try {
 //       if (dio != null) {
 //         final res = await dio!.get(
-//           "https://realestate.gwsstaging.com/api/v1/committee/announcements",
+//           "https://admin.ascentpms.care/api/v1/committee/announcements",
 //         );
 //         log("Get Committee Announcements Response: ${res.data}");
 //         return GetCommitteeAnnouncementModel.fromJson(res.data);
@@ -1589,13 +1591,13 @@
 
 //   /// ==========================================
 //   /// RESIDENT GET ANNOUNCEMENTS API
-//   /// GET: https://realestate.gwsstaging.com/api/v1/resident/announcements
+//   /// GET: https://admin.ascentpms.care/api/v1/resident/announcements
 //   /// ==========================================
 //   Future<GetResidentAnnouncementModel> getResidentAnnouncements() async {
 //     try {
 //       if (dio != null) {
 //         final res = await dio!.get(
-//           "https://realestate.gwsstaging.com/api/v1/resident/announcements",
+//           "https://admin.ascentpms.care/api/v1/resident/announcements",
 //         );
 //         log("Get Resident Announcements Response: ${res.data}");
 //         return GetResidentAnnouncementModel.fromJson(res.data);
@@ -1610,7 +1612,7 @@
 
 //   // ---------- Resident: service request / completion / frequent visitors ----------
 //   // Naye endpoints Dio se call ho rahe hain (Retrofit .g.dart regenerate karne ki zaroorat nahi).
-//   static const String _base = "https://realestate.gwsstaging.com/api/v1";
+//   static const String _base = "https://admin.ascentpms.care/api/v1";
 
 //   Future<Map<String, dynamic>> getResidentServiceFormData() async {
 //     final res = await dio!.get("$_base/resident/service-requests/form-data");
@@ -2075,7 +2077,7 @@ class AuthService {
     try {
       if (dio != null) {
         final res = await dio!.post(
-          "https://realestate.gwsstaging.com/api/v1/committee/maintenance/$id/status",
+          "https://admin.ascentpms.care/api/v1/committee/maintenance/$id/status",
           data: {
             "status": status,
             if (notes != null && notes.isNotEmpty) "notes": notes,
@@ -2103,7 +2105,7 @@ class AuthService {
   }) async {
     try {
       final res = await dio!.get(
-        "https://realestate.gwsstaging.com/api/v1/committee/visitor-logs",
+        "https://admin.ascentpms.care/api/v1/committee/visitor-logs",
         queryParameters: {
           if (dateFrom != null && dateFrom.isNotEmpty) "date_from": dateFrom,
           if (dateTo != null && dateTo.isNotEmpty) "date_to": dateTo,
@@ -2177,6 +2179,9 @@ class AuthService {
     required String floor,
     required String location,
     String? block, // Block dropdown se ("Block A" ...)
+    String? electricityMeterNo,
+    String? waterConnectionNo,
+    String? municipalityNumber,
   }) async {
     try {
       final body = AddUnitBodyModel(
@@ -2186,6 +2191,9 @@ class AuthService {
         bedrooms: bedroom,
         floor: floor,
         location: location,
+        electricityMeterNo: electricityMeterNo,
+        waterConnectionNo: waterConnectionNo,
+        municipalityNumber: municipalityNumber,
       );
       final response = await api.addUnit(body);
       return response;
@@ -2209,7 +2217,7 @@ class AuthService {
     try {
       if (dio != null) {
         final res = await dio!.post(
-          "https://realestate.gwsstaging.com/api/v1/committee/charges/defaulters/$id/send-reminder",
+          "https://admin.ascentpms.care/api/v1/committee/charges/defaulters/$id/send-reminder",
           data: {},
         );
         return res.data;
@@ -2232,7 +2240,7 @@ class AuthService {
       if (dio != null) {
         final num? parsedAmount = num.tryParse(amount.toString());
         final res = await dio!.post(
-          "https://realestate.gwsstaging.com/api/v1/committee/charges/defaulters/$id/receive-pay",
+          "https://admin.ascentpms.care/api/v1/committee/charges/defaulters/$id/receive-pay",
           data: {
             "paid_via": paidVia,
             "amount": parsedAmount ?? amount,
@@ -2253,7 +2261,7 @@ class AuthService {
     try {
       if (dio != null) {
         final res = await dio!.post(
-          "https://realestate.gwsstaging.com/api/v1/committee/charges/defaulters/$id/toggle-status",
+          "https://admin.ascentpms.care/api/v1/committee/charges/defaulters/$id/toggle-status",
           data: {},
         );
         return res.data;
@@ -2315,6 +2323,7 @@ class AuthService {
     MultipartFile? attachment,
     required String type,
     int? propertyId,
+    String? areaType,
   }) async {
     try {
       final response = await api.createService(
@@ -2328,6 +2337,7 @@ class AuthService {
         attachment,
         type,
         propertyId,
+        areaType,
       );
       return response;
     } catch (e) {
@@ -3197,7 +3207,7 @@ class AuthService {
 
   /// ==========================================
   /// COMMITTEE ADD ANNOUNCEMENT API
-  /// POST: https://realestate.gwsstaging.com/api/v1/committee/announcements
+  /// POST: https://admin.ascentpms.care/api/v1/committee/announcements
   /// ==========================================
   Future<AddAnnouncementResModel> addAnnouncement({
     required String title,
@@ -3221,7 +3231,7 @@ class AuthService {
 
       if (dio != null) {
         final res = await dio!.post(
-          "https://realestate.gwsstaging.com/api/v1/committee/announcements",
+          "https://admin.ascentpms.care/api/v1/committee/announcements",
           data: body.toJson(),
         );
         log("Add Announcement Response: ${res.data}");
@@ -3237,13 +3247,13 @@ class AuthService {
 
   /// ==========================================
   /// COMMITTEE GET ANNOUNCEMENTS API
-  /// GET: https://realestate.gwsstaging.com/api/v1/committee/announcements
+  /// GET: https://admin.ascentpms.care/api/v1/committee/announcements
   /// ==========================================
   Future<GetCommitteeAnnouncementModel> getCommitteeAnnouncements() async {
     try {
       if (dio != null) {
         final res = await dio!.get(
-          "https://realestate.gwsstaging.com/api/v1/committee/announcements",
+          "https://admin.ascentpms.care/api/v1/committee/announcements",
         );
         log("Get Committee Announcements Response: ${res.data}");
         return GetCommitteeAnnouncementModel.fromJson(res.data);
@@ -3258,13 +3268,13 @@ class AuthService {
 
   /// ==========================================
   /// RESIDENT GET ANNOUNCEMENTS API
-  /// GET: https://realestate.gwsstaging.com/api/v1/resident/announcements
+  /// GET: https://admin.ascentpms.care/api/v1/resident/announcements
   /// ==========================================
   Future<GetResidentAnnouncementModel> getResidentAnnouncements() async {
     try {
       if (dio != null) {
         final res = await dio!.get(
-          "https://realestate.gwsstaging.com/api/v1/resident/announcements",
+          "https://admin.ascentpms.care/api/v1/resident/announcements",
         );
         log("Get Resident Announcements Response: ${res.data}");
         return GetResidentAnnouncementModel.fromJson(res.data);
@@ -3279,7 +3289,7 @@ class AuthService {
 
   // ---------- Resident: service request / completion / frequent visitors ----------
   // Naye endpoints Dio se call ho rahe hain (Retrofit .g.dart regenerate karne ki zaroorat nahi).
-  static const String _base = "https://realestate.gwsstaging.com/api/v1";
+  static const String _base = "https://admin.ascentpms.care/api/v1";
 
   Future<Map<String, dynamic>> getResidentServiceFormData() async {
     final res = await dio!.get("$_base/resident/service-requests/form-data");
@@ -3330,6 +3340,188 @@ class AuthService {
 
   Future<Map<String, dynamic>> getResidentFrequentVisitors() async {
     final res = await dio!.get("$_base/resident/frequent-visitors");
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  // ---------- Association: Service Request flow ----------
+  // Submitted -> Vendor Assigned -> In Progress -> Completed (resident) -> Closed (association)
+
+  /// Service request par vendor assign / change (sirf society ke active vendor)
+  Future<Map<String, dynamic>> assignServiceRequestVendor({
+    required String id,
+    required int vendorId,
+  }) async {
+    final res = await dio!.post(
+      "$_base/committee/service-requests/$id/assign-vendor",
+      data: {'vendor_id': vendorId},
+    );
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  /// Association: unit edit (poori details + caretaker). POST /committee/units/{id}/update
+  Future<Map<String, dynamic>> updateUnit({
+    required String id,
+    required Map<String, dynamic> body,
+  }) async {
+    final res = await dio!.post(
+      "$_base/committee/units/$id/update",
+      data: body,
+    );
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  /// Association: resident Move Out / Vacate Unit. POST /committee/units/{id}/move-out
+  /// Unpaid MMC ho to confirmPendingDues = true bhejna padta hai (warna 409).
+  Future<Map<String, dynamic>> moveOutUnit({
+    required String id,
+    bool confirmPendingDues = false,
+  }) async {
+    final res = await dio!.post(
+      "$_base/committee/units/$id/move-out",
+      data: {if (confirmPendingDues) "confirm_pending_dues": true},
+    );
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  /// Association: society ke guards. GET /committee/guards
+  Future<Map<String, dynamic>> getCommitteeGuards() async {
+    final res = await dio!.get("$_base/committee/guards");
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  /// Guard shifts (edit dropdown). GET /committee/shifts
+  Future<Map<String, dynamic>> getCommitteeShifts() async {
+    final res = await dio!.get("$_base/committee/shifts");
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  /// Association: guard edit. POST /committee/guards/{id}/update
+  Future<Map<String, dynamic>> updateGuard({
+    required String id,
+    required Map<String, dynamic> body,
+  }) async {
+    final res = await dio!.post(
+      "$_base/committee/guards/$id/update",
+      data: body,
+    );
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  /// Association: guard ko society se hatao (login band, history safe). POST /committee/guards/{id}/remove
+  Future<Map<String, dynamic>> removeGuard({required String id}) async {
+    final res = await dio!.post("$_base/committee/guards/$id/remove");
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  /// Society Caretakers (sirf naam + number). GET /committee/caretakers
+  Future<Map<String, dynamic>> getCaretakers() async {
+    final res = await dio!.get("$_base/committee/caretakers");
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  /// Caretaker add (id null) ya edit. POST /committee/caretakers  |  /committee/caretakers/{id}/update
+  Future<Map<String, dynamic>> saveCaretaker({
+    String? id,
+    required String name,
+    required String phone,
+  }) async {
+    final url = (id == null || id.isEmpty)
+        ? "$_base/committee/caretakers"
+        : "$_base/committee/caretakers/$id/update";
+    final res = await dio!.post(url, data: {"name": name, "phone": phone});
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  /// Guard Inventory: saamaan + kitna hai + summary + meri requests. GET /guard/inventory
+  Future<Map<String, dynamic>> getGuardInventory() async {
+    final res = await dio!.get("$_base/guard/inventory");
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  /// Guard Inventory: meri saari requests. GET /guard/inventory/requests
+  Future<Map<String, dynamic>> getGuardInventoryRequests() async {
+    final res = await dio!.get("$_base/guard/inventory/requests");
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  /// Guard: "kam hai / chahiye" request -> Association. List ka item (itemId) ya naya saamaan (itemName).
+  Future<Map<String, dynamic>> sendInventoryRequest({
+    int? itemId,
+    String? itemName,
+    num? quantity,
+    String? message,
+  }) async {
+    final res = await dio!.post(
+      "$_base/guard/inventory/requests",
+      data: {
+        if (itemId != null) "item_id": itemId,
+        if (itemId == null && itemName != null) "item_name": itemName,
+        if (quantity != null) "quantity": quantity,
+        if (message != null && message.trim().isNotEmpty)
+          "message": message.trim(),
+      },
+    );
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  /// Caretaker hatao (units "Not assigned" ho jaate hain). POST /committee/caretakers/{id}/delete
+  Future<Map<String, dynamic>> deleteCaretaker({required String id}) async {
+    final res = await dio!.post("$_base/committee/caretakers/$id/delete");
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  /// Society complaint par vendor assign (Association)
+  Future<Map<String, dynamic>> assignComplaintVendor({
+    required String id,
+    required int vendorId,
+  }) async {
+    final res = await dio!.post(
+      "$_base/committee/complaints/$id/assign-vendor",
+      data: {'vendor_id': vendorId},
+    );
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  /// Association status: "in_progress" ya "closed" (close sirf resident ke Completed ke baad)
+  Future<Map<String, dynamic>> updateServiceRequestStatus({
+    required String id,
+    required String status,
+  }) async {
+    final res = await dio!.post(
+      "$_base/committee/tickets/$id/status",
+      data: {'status': status},
+    );
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  /// Stayo Assistant (society): welcome, suggested questions + pichhle 24 ghante ki chat.
+  /// mode: "resident" (Resident app) | "association" (Association app)
+  Future<Map<String, dynamic>> getStayoAssistant({required String mode}) async {
+    final res = await dio!.get(
+      "$_base/ai/property-assistant",
+      queryParameters: {'assistant_mode': mode},
+    );
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  /// Stayo Assistant ko sawaal - jawab society ke live data se aata hai
+  Future<Map<String, dynamic>> askStayoAssistant({
+    required String mode,
+    required String query,
+  }) async {
+    final res = await dio!.post(
+      "$_base/ai/property-assistant",
+      data: {'query': query, 'assistant_mode': mode},
+    );
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  /// Stayo Assistant ki chat history clear
+  Future<Map<String, dynamic>> clearStayoAssistantHistory() async {
+    final res = await dio!.delete(
+      "$_base/ai/history",
+      queryParameters: {'type': 'property_assistant'},
+    );
     return Map<String, dynamic>.from(res.data as Map);
   }
 }

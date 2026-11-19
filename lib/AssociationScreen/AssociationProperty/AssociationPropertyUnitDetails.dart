@@ -1621,9 +1621,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:property_association_or_resident/AssociationScreen/AssociationAuditReport/inspectionReportScreen.dart';
 import 'package:property_association_or_resident/AssociationScreen/AssociationProperty/Provider/getPropertyUnitDetailsProvider.dart';
 import 'package:property_association_or_resident/AssociationScreen/AssociatoinComplaint/Complaint.dart';
 import 'package:property_association_or_resident/AssociationScreen/Mantenance&Service/MantenanceService.dart';
+import 'package:property_association_or_resident/Core/AuthService/AuthServiceProvider.dart';
 import 'package:property_association_or_resident/Core/Constant/appColor.dart';
 import 'package:property_association_or_resident/Core/Utils/showMessage.dart';
 import 'package:property_association_or_resident/Core/data/model/ResponseModel/getPropertyUnitDetailsModel.dart';
@@ -1642,9 +1644,592 @@ class AssociationPropertyUnitDetails extends ConsumerStatefulWidget {
 
 class _AssociationPropertyUnitDetailsState
     extends ConsumerState<AssociationPropertyUnitDetails> {
+  /// API value -> text field ("N/A" / null -> "")
+  String _editText(dynamic v) {
+    if (v == null) return "";
+    final s = v.toString().trim();
+    return s.toUpperCase() == "N/A" ? "" : s;
+  }
+
+  Widget _editField(
+    String label,
+    TextEditingController c,
+    String hint, {
+    bool required = false,
+  }) {
+    final border = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(6.r),
+      borderSide: const BorderSide(
+        color: Color.fromRGBO(16, 28, 22, 0.6),
+        width: 1.2,
+      ),
+    );
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            required ? "$label *" : label,
+            style: GoogleFonts.outfit(
+              fontSize: 11.5.sp,
+              fontWeight: FontWeight.w600,
+              color: AppColors.heading,
+              letterSpacing: 0.2,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          TextField(
+            controller: c,
+            cursorColor: AppColors.heading,
+            style: GoogleFonts.outfit(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w500,
+              color: AppColors.heading,
+            ),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: GoogleFonts.outfit(
+                fontSize: 13.5.sp,
+                color: const Color.fromRGBO(16, 28, 22, 0.4),
+              ),
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 14.w,
+                vertical: 12.h,
+              ),
+              border: border,
+              enabledBorder: border,
+              focusedBorder: border.copyWith(
+                borderSide: const BorderSide(
+                  color: AppColors.heading,
+                  width: 1.5,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Association: Edit Unit (poori details) -> POST /committee/units/{id}/update
+  /// Association: resident Move Out / Vacate Unit (unit khaali, resident inactive, history safe)
+  void _confirmMoveOut(Map<String, dynamic> info, String unitId) {
+    final residentName = (info["resident_name"] ?? "the resident").toString();
+    final typeLabel = info["resident_type"] == "owner" ? "Owner" : "Tenant";
+    final duesCount = int.tryParse("${info["pending_dues_count"] ?? 0}") ?? 0;
+    final duesDisplay = (info["pending_dues_display"] ?? "").toString();
+
+    showDialog(
+      context: context,
+      builder: (dCtx) {
+        bool saving = false;
+        return StatefulBuilder(
+          builder: (dCtx, setDlg) {
+            final bullet = GoogleFonts.outfit(
+              fontSize: 13.sp,
+              color: const Color.fromRGBO(42, 41, 51, 0.75),
+            );
+            return AlertDialog(
+              backgroundColor: AppColors.scaffoldBg,
+              title: Text(
+                "Move Out Resident",
+                style: GoogleFonts.outfit(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.heading,
+                ),
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "$residentName ($typeLabel) will be moved out of this unit.",
+                      style: GoogleFonts.outfit(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.heading,
+                      ),
+                    ),
+                    SizedBox(height: 10.h),
+                    Text(
+                      "• The unit becomes vacant and a new resident can be added.",
+                      style: bullet,
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      "• $residentName's account becomes inactive (cannot log in).",
+                      style: bullet,
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      "• Requests, complaints, visitor passes and MMC bills stay in history.",
+                      style: bullet,
+                    ),
+                    if (duesCount > 0) ...[
+                      SizedBox(height: 12.h),
+                      Container(
+                        padding: EdgeInsets.all(10.w),
+                        decoration: BoxDecoration(
+                          color: const Color.fromRGBO(220, 38, 38, 0.08),
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Text(
+                          "$duesCount unpaid MMC ${duesCount == 1 ? "bill" : "bills"}"
+                          "${duesDisplay.isNotEmpty ? " ($duesDisplay)" : ""}. "
+                          "These bills will stay in $residentName's name.",
+                          style: GoogleFonts.outfit(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF991B1B),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: saving ? null : () => Navigator.pop(dCtx),
+                  child: Text(
+                    "Cancel",
+                    style: GoogleFonts.outfit(color: AppColors.heading),
+                  ),
+                ),
+                TextButton(
+                  onPressed: saving
+                      ? null
+                      : () async {
+                          setDlg(() => saving = true);
+                          try {
+                            final res = await ref
+                                .read(authServiceProvider)
+                                .moveOutUnit(
+                                  id: unitId,
+                                  confirmPendingDues: duesCount > 0,
+                                );
+                            if (res["status"] == false) {
+                              showErrorSnackBar(
+                                (res["message"] ??
+                                        "Failed to move out the resident.")
+                                    .toString(),
+                              );
+                            } else {
+                              if (dCtx.mounted) Navigator.pop(dCtx);
+                              showSuccessSnackBar(
+                                (res["message"] ??
+                                        "Resident moved out. Unit is now vacant.")
+                                    .toString(),
+                              );
+                              ref.invalidate(
+                                getPropertyUnitDetailsProvider(widget.id),
+                              );
+                            }
+                          } catch (e) {
+                            // Server ka message dio interceptor dikha deta hai (jaise naya unpaid bill).
+                            // Details refresh -> dobara kholne par naya baaki amount dikhega.
+                            if (dCtx.mounted) Navigator.pop(dCtx);
+                            ref.invalidate(
+                              getPropertyUnitDetailsProvider(widget.id),
+                            );
+                          } finally {
+                            if (dCtx.mounted) setDlg(() => saving = false);
+                          }
+                        },
+                  child: Text(
+                    saving
+                        ? "Please wait..."
+                        : (duesCount > 0
+                              ? "Move Out Anyway"
+                              : "Confirm Move Out"),
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFDC2626),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _openEditUnit(Map<String, dynamic> form) {
+    final unitId = (form["id"] ?? widget.id).toString();
+    final blocks = (form["block_options"] is List)
+        ? List<String>.from(
+            (form["block_options"] as List).map((e) => e.toString()),
+          )
+        : <String>[];
+    String? selectedBlock = _editText(form["block"]);
+    if (selectedBlock.isEmpty || !blocks.contains(selectedBlock)) {
+      selectedBlock = blocks.length == 1 ? blocks.first : null;
+    }
+    final unitNumberC = TextEditingController(
+      text: _editText(form["unit_number"]),
+    );
+    final locationC = TextEditingController(text: _editText(form["location"]));
+    final floorC = TextEditingController(text: _editText(form["floor"]));
+    final areaC = TextEditingController(text: _editText(form["area"]));
+    final bedroomsC = TextEditingController(text: _editText(form["bedrooms"]));
+    final electricityC = TextEditingController(
+      text: _editText(form["electricity_meter_no"]),
+    );
+    final waterC = TextEditingController(
+      text: _editText(form["water_connection_no"]),
+    );
+    final municipalityC = TextEditingController(
+      text: _editText(form["municipality_number"]),
+    );
+    // Society Caretaker dropdown (purana API -> caretaker_options nahi -> dropdown nahi)
+    final List<Map<String, dynamic>>? caretakerOptions =
+        (form["caretaker_options"] is List)
+        ? (form["caretaker_options"] as List)
+              .whereType<Map>()
+              .map((e) => Map<String, dynamic>.from(e))
+              .toList()
+        : null;
+    String? selectedCaretaker = form["caretaker_id"]?.toString();
+    if (selectedCaretaker != null &&
+        (caretakerOptions == null ||
+            !caretakerOptions.any(
+              (c) => c["id"].toString() == selectedCaretaker,
+            ))) {
+      selectedCaretaker = null;
+    }
+    bool saving = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.scaffoldBg,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheet) {
+            final border = OutlineInputBorder(
+              borderRadius: BorderRadius.circular(6.r),
+              borderSide: const BorderSide(
+                color: Color.fromRGBO(16, 28, 22, 0.6),
+                width: 1.2,
+              ),
+            );
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(ctx).viewInsets.bottom,
+              ),
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 20.h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "Edit Unit / Flat",
+                        style: GoogleFonts.outfit(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.heading,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        "Update the details of this unit. The resident linked to this unit stays the same.",
+                        style: GoogleFonts.outfit(
+                          fontSize: 12.5.sp,
+                          color: const Color.fromRGBO(42, 41, 51, 0.7),
+                        ),
+                      ),
+                      SizedBox(height: 16.h),
+                      _editField(
+                        "UNIT / FLAT NUMBER",
+                        unitNumberC,
+                        "e.g. A-101",
+                        required: true,
+                      ),
+                      Text(
+                        "BLOCK *",
+                        style: GoogleFonts.outfit(
+                          fontSize: 11.5.sp,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.heading,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                      SizedBox(height: 6.h),
+                      DropdownButtonFormField<String>(
+                        value:
+                            (selectedBlock != null &&
+                                blocks.contains(selectedBlock))
+                            ? selectedBlock
+                            : null,
+                        isExpanded: true,
+                        dropdownColor: AppColors.scaffoldBg,
+                        hint: Text(
+                          blocks.isEmpty ? "No blocks found" : "Select Block",
+                          style: GoogleFonts.outfit(
+                            fontSize: 13.5.sp,
+                            color: const Color.fromRGBO(16, 28, 22, 0.4),
+                          ),
+                        ),
+                        style: GoogleFonts.outfit(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.heading,
+                        ),
+                        items: blocks
+                            .map(
+                              (b) => DropdownMenuItem<String>(
+                                value: b,
+                                child: Text(b),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: blocks.isEmpty
+                            ? null
+                            : (v) => setSheet(() => selectedBlock = v),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 14.w,
+                            vertical: 12.h,
+                          ),
+                          border: border,
+                          enabledBorder: border,
+                          focusedBorder: border.copyWith(
+                            borderSide: const BorderSide(
+                              color: AppColors.heading,
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 12.h),
+                      _editField(
+                        "LOCATION",
+                        locationC,
+                        "e.g. Tower 1, near Gate 2",
+                      ),
+                      _editField("FLOOR", floorC, "e.g. 1st Floor"),
+                      _editField("AREA", areaC, "e.g. 1,200 sq ft"),
+                      _editField("BEDROOMS", bedroomsC, "e.g. 2 BHK"),
+                      _editField(
+                        "ELECTRICITY METER NO.",
+                        electricityC,
+                        "e.g. EM-458921",
+                      ),
+                      _editField(
+                        "WATER CONNECTION NO.",
+                        waterC,
+                        "e.g. WC-10234",
+                      ),
+                      _editField(
+                        "MUNICIPALITY NO.",
+                        municipalityC,
+                        "e.g. MC-2024-0081",
+                      ),
+                      if (caretakerOptions != null) ...[
+                        Text(
+                          "CARETAKER",
+                          style: GoogleFonts.outfit(
+                            fontSize: 11.5.sp,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.heading,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                        SizedBox(height: 6.h),
+                        DropdownButtonFormField<String>(
+                          value: selectedCaretaker,
+                          isExpanded: true,
+                          dropdownColor: AppColors.scaffoldBg,
+                          style: GoogleFonts.outfit(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.heading,
+                          ),
+                          items: [
+                            DropdownMenuItem<String>(
+                              value: null,
+                              child: Text(
+                                "Not assigned",
+                                style: GoogleFonts.outfit(
+                                  fontSize: 14.sp,
+                                  color: const Color.fromRGBO(16, 28, 22, 0.6),
+                                ),
+                              ),
+                            ),
+                            ...caretakerOptions.map(
+                              (c) => DropdownMenuItem<String>(
+                                value: c["id"].toString(),
+                                child: Text(
+                                  "${c["name"] ?? "-"}${(c["phone"] ?? "").toString().isNotEmpty ? " (${c["phone"]})" : ""}",
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                          ],
+                          onChanged: (v) =>
+                              setSheet(() => selectedCaretaker = v),
+                          decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 14.w,
+                              vertical: 12.h,
+                            ),
+                            border: border,
+                            enabledBorder: border,
+                            focusedBorder: border.copyWith(
+                              borderSide: const BorderSide(
+                                color: AppColors.heading,
+                                width: 1.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                        if (caretakerOptions.isEmpty)
+                          Padding(
+                            padding: EdgeInsets.only(top: 6.h),
+                            child: Text(
+                              "No caretakers yet. Add them from Profile → Caretakers.",
+                              style: GoogleFonts.outfit(
+                                fontSize: 12.sp,
+                                color: const Color.fromRGBO(42, 41, 51, 0.6),
+                              ),
+                            ),
+                          ),
+                        SizedBox(height: 12.h),
+                      ],
+                      SizedBox(height: 8.h),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 46.h,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.heading,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6.r),
+                            ),
+                          ),
+                          onPressed: saving
+                              ? null
+                              : () async {
+                                  if (unitNumberC.text.trim().isEmpty) {
+                                    showErrorSnackBar(
+                                      "Please enter Unit / Flat Number",
+                                    );
+                                    return;
+                                  }
+                                  if (selectedBlock == null ||
+                                      selectedBlock!.isEmpty) {
+                                    showErrorSnackBar(
+                                      "Please select the Block of this unit",
+                                    );
+                                    return;
+                                  }
+                                  setSheet(() => saving = true);
+                                  try {
+                                    final res = await ref
+                                        .read(authServiceProvider)
+                                        .updateUnit(
+                                          id: unitId,
+                                          body: {
+                                            "unit_number": unitNumberC.text
+                                                .trim(),
+                                            "block": selectedBlock,
+                                            "location": locationC.text.trim(),
+                                            "floor": floorC.text.trim(),
+                                            "area": areaC.text.trim(),
+                                            "bedrooms": bedroomsC.text.trim(),
+                                            "electricity_meter_no": electricityC
+                                                .text
+                                                .trim(),
+                                            "water_connection_no": waterC.text
+                                                .trim(),
+                                            "municipality_number": municipalityC
+                                                .text
+                                                .trim(),
+                                            // Caretaker: null = Not assigned
+                                            if (caretakerOptions != null)
+                                              "caretaker_id": selectedCaretaker,
+                                          },
+                                        );
+                                    if (res["status"] == true) {
+                                      if (ctx.mounted) Navigator.pop(ctx);
+                                      showSuccessSnackBar(
+                                        (res["message"] ??
+                                                "Unit updated successfully.")
+                                            .toString(),
+                                      );
+                                      ref.invalidate(
+                                        getPropertyUnitDetailsProvider(
+                                          widget.id,
+                                        ),
+                                      );
+                                    } else {
+                                      showErrorSnackBar(
+                                        (res["message"] ??
+                                                "Failed to update unit.")
+                                            .toString(),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    // Server ka error message dio interceptor dikha deta hai
+                                  } finally {
+                                    if (ctx.mounted)
+                                      setSheet(() => saving = false);
+                                  }
+                                },
+                          child: saving
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 1.5,
+                                  ),
+                                )
+                              : Text(
+                                  "Save Changes",
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final detailState = ref.watch(getPropertyUnitDetailsProvider(widget.id));
+    // Edit Unit sirf Association ke liye (purana API -> edit_form nahi -> button nahi)
+    final editForm = detailState.valueOrNull?.data?.editForm;
+    final canEditUnit = editForm != null && editForm["can_edit"] == true;
+    // Move Out (sirf jab unit par resident hai). Purana API -> move_out nahi -> button nahi
+    final moveOutInfo = detailState.valueOrNull?.data?.moveOut;
+    final canMoveOut =
+        moveOutInfo != null && moveOutInfo["can_move_out"] == true;
+    final moveOutUnitId = (editForm?["id"] ?? widget.id).toString();
     return Scaffold(
       backgroundColor: AppColors.scaffoldBg,
       appBar: AppBar(
@@ -1707,6 +2292,45 @@ class _AssociationPropertyUnitDetailsState
                   ],
                 ),
               ),
+              if (canMoveOut) ...[
+                GestureDetector(
+                  onTap: () => _confirmMoveOut(moveOutInfo!, moveOutUnitId),
+                  child: Container(
+                    width: 44.w,
+                    height: 44.h,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(
+                        color: const Color.fromRGBO(220, 38, 38, 0.4),
+                      ),
+                      borderRadius: BorderRadius.circular(6.r),
+                    ),
+                    child: Icon(
+                      Icons.logout,
+                      color: const Color(0xFFDC2626),
+                      size: 20.sp,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8.w),
+              ],
+              if (canEditUnit)
+                GestureDetector(
+                  onTap: () => _openEditUnit(editForm!),
+                  child: Container(
+                    width: 44.w,
+                    height: 44.h,
+                    decoration: BoxDecoration(
+                      color: AppColors.heading,
+                      borderRadius: BorderRadius.circular(6.r),
+                    ),
+                    child: Icon(
+                      Icons.edit_outlined,
+                      color: Colors.white,
+                      size: 20.sp,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -2142,65 +2766,65 @@ class _AssociationPropertyUnitDetailsState
                       ),
                     ],
 
-                    SizedBox(height: 20.h),
-                    Row(
-                      children: [
-                        Text(
-                          "Recent Property Activity",
-                          style: GoogleFonts.outfit(
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.heading,
-                            letterSpacing: -0.2,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16.h),
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 14.w,
-                        vertical: 10.h,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: const Color(0xFF000000),
-                          width: 1.w,
-                        ),
-                        borderRadius: BorderRadius.circular(10.r),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (activities.isNotEmpty) ...[
-                            for (int i = 0; i < activities.length; i++) ...[
-                              if (i > 0) _divider(),
-                              _activityItem(
-                                activity: activities[i],
-                                icon: _mapActivitySymbol(activities[i].icon),
-                                title: activities[i].title ?? "",
-                                subtitle: activities[i].subtitle ?? "",
-                                date: activities[i].date ?? "",
-                                onTap: () =>
-                                    _showActivityDetails(activities[i]),
-                              ),
-                            ],
-                          ] else
-                            Padding(
-                              padding: EdgeInsets.symmetric(vertical: 8.h),
-                              child: Text(
-                                "No recent property activity recorded.",
-                                style: GoogleFonts.outfit(
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.w500,
-                                  color: const Color.fromRGBO(42, 41, 51, 0.6),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
+                    // SizedBox(height: 20.h),
+                    // Row(
+                    //   children: [
+                    //     Text(
+                    //       "Recent Property Activity",
+                    //       style: GoogleFonts.outfit(
+                    //         fontSize: 18.sp,
+                    //         fontWeight: FontWeight.w700,
+                    //         color: AppColors.heading,
+                    //         letterSpacing: -0.2,
+                    //       ),
+                    //     ),
+                    //   ],
+                    // ),
+                    // SizedBox(height: 16.h),
+                    // Container(
+                    //   width: double.infinity,
+                    //   padding: EdgeInsets.symmetric(
+                    //     horizontal: 14.w,
+                    //     vertical: 10.h,
+                    //   ),
+                    //   decoration: BoxDecoration(
+                    //     border: Border.all(
+                    //       color: const Color(0xFF000000),
+                    //       width: 1.w,
+                    //     ),
+                    //     borderRadius: BorderRadius.circular(10.r),
+                    //   ),
+                    //   child: Column(
+                    //     crossAxisAlignment: CrossAxisAlignment.start,
+                    //     children: [
+                    //       if (activities.isNotEmpty) ...[
+                    //         for (int i = 0; i < activities.length; i++) ...[
+                    //           if (i > 0) _divider(),
+                    //           _activityItem(
+                    //             activity: activities[i],
+                    //             icon: _mapActivitySymbol(activities[i].icon),
+                    //             title: activities[i].title ?? "",
+                    //             subtitle: activities[i].subtitle ?? "",
+                    //             date: activities[i].date ?? "",
+                    //             onTap: () =>
+                    //                 _showActivityDetails(activities[i]),
+                    //           ),
+                    //         ],
+                    //       ] else
+                    //         Padding(
+                    //           padding: EdgeInsets.symmetric(vertical: 8.h),
+                    //           child: Text(
+                    //             "No recent property activity recorded.",
+                    //             style: GoogleFonts.outfit(
+                    //               fontSize: 14.sp,
+                    //               fontWeight: FontWeight.w500,
+                    //               color: const Color.fromRGBO(42, 41, 51, 0.6),
+                    //             ),
+                    //           ),
+                    //         ),
+                    //     ],
+                    //   ),
+                    // ),
                     SizedBox(height: 20.h),
                     Text(
                       "Property Records",
@@ -2237,6 +2861,14 @@ class _AssociationPropertyUnitDetailsState
                                         "inspection",
                                       ) ??
                                       false)) {
+                                // Inspection records -> Inspection Reports screen (pehle tap par kuch nahi hota tha)
+                                Navigator.push(
+                                  context,
+                                  CupertinoPageRoute(
+                                    builder: (context) =>
+                                        const InspectionReportScreen(),
+                                  ),
+                                );
                               } else if (rec.id == "maintenance" ||
                                   (rec.title?.toLowerCase().contains(
                                         "maintenance",
@@ -2444,6 +3076,8 @@ class _AssociationPropertyUnitDetailsState
         return Icons.apartment;
       case "check_circle":
         return Icons.radio_button_checked;
+      case "support_agent": // Society Caretaker
+        return Icons.support_agent;
       default:
         return defaultIcon;
     }

@@ -69,6 +69,8 @@ class Data {
   final List<MmcHistoryItem>? history;
   final int? pendingMonthsCount;
   final int? totalPendingAmount;
+  // Resident ki payment receipts (month, jama amount, View / Download link)
+  final List<MmcReceiptItem> receipts;
 
   Data({
     required this.header,
@@ -78,6 +80,7 @@ class Data {
     this.history,
     this.pendingMonthsCount,
     this.totalPendingAmount,
+    this.receipts = const [],
   });
 
   factory Data.fromJson(Map<String, dynamic> json) {
@@ -106,6 +109,14 @@ class Data {
       history: historyList.isNotEmpty ? historyList : null,
       pendingMonthsCount: json["pending_months_count"] ?? json["unpaid_count"],
       totalPendingAmount: json["total_pending_amount"] ?? json["total_due"],
+      receipts: (json["receipts"] is List)
+          ? (json["receipts"] as List)
+                .whereType<Map>()
+                .map(
+                  (x) => MmcReceiptItem.fromJson(Map<String, dynamic>.from(x)),
+                )
+                .toList()
+          : const [],
     );
   }
 
@@ -117,6 +128,59 @@ class Data {
     "history": history?.map((x) => x.toJson()).toList(),
     "pending_months_count": pendingMonthsCount,
     "total_pending_amount": totalPendingAmount,
+    "receipts": receipts.map((x) => x.toJson()).toList(),
+  };
+}
+
+/// Ek payment ki receipt (partial payment ki bhi alag receipt hoti hai)
+class MmcReceiptItem {
+  final String receiptNo;
+  final String month;
+  final num amount;
+  final String formattedAmount;
+  final String? paidOn;
+  final String? paidVia;
+  final bool isFullPayment;
+  final String? receiptUrl;
+  final String? receiptDownloadUrl;
+
+  MmcReceiptItem({
+    required this.receiptNo,
+    required this.month,
+    required this.amount,
+    required this.formattedAmount,
+    this.paidOn,
+    this.paidVia,
+    this.isFullPayment = true,
+    this.receiptUrl,
+    this.receiptDownloadUrl,
+  });
+
+  factory MmcReceiptItem.fromJson(Map<String, dynamic> json) => MmcReceiptItem(
+    receiptNo: _parseString(json["receipt_no"]),
+    month: _parseString(json["month"]),
+    amount: _parseNum(json["amount"]),
+    formattedAmount: _parseString(
+      json["formatted_amount"],
+      "₹ ${_parseNum(json["amount"])}",
+    ),
+    paidOn: json["paid_on"]?.toString(),
+    paidVia: json["paid_via"]?.toString(),
+    isFullPayment: _parseBool(json["is_full_payment"], true),
+    receiptUrl: json["receipt_url"]?.toString(),
+    receiptDownloadUrl: json["receipt_download_url"]?.toString(),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "receipt_no": receiptNo,
+    "month": month,
+    "amount": amount,
+    "formatted_amount": formattedAmount,
+    "paid_on": paidOn,
+    "paid_via": paidVia,
+    "is_full_payment": isFullPayment,
+    "receipt_url": receiptUrl,
+    "receipt_download_url": receiptDownloadUrl,
   };
 }
 
@@ -228,11 +292,9 @@ class MmcHistoryItem {
   });
 
   factory MmcHistoryItem.fromJson(Map<String, dynamic> json) => MmcHistoryItem(
-    month:
-        json["month"]?.toString() ?? json["billing_month"]?.toString() ?? "",
+    month: json["month"]?.toString() ?? json["billing_month"]?.toString() ?? "",
     amountDisplay:
-        json["amount_display"]?.toString() ??
-        "SAR ${json["amount"] ?? 4250}",
+        json["amount_display"]?.toString() ?? "SAR ${json["amount"] ?? 4250}",
     amount: int.tryParse(json["amount"]?.toString() ?? "4250") ?? 4250,
     currency: json["currency"]?.toString() ?? "SAR",
     status:
@@ -296,8 +358,12 @@ class PayNow {
     label: _parseString(json["label"]),
     endpoint: _parseString(json["endpoint"]),
     method: _parseString(json["method"]),
-    isAvailable: json["is_available"] != null ? _parseBool(json["is_available"]) : null,
-    payAmount: json["pay_amount"] != null ? _parseNum(json["pay_amount"]) : null,
+    isAvailable: json["is_available"] != null
+        ? _parseBool(json["is_available"])
+        : null,
+    payAmount: json["pay_amount"] != null
+        ? _parseNum(json["pay_amount"])
+        : null,
     payAmountDisplay: json["pay_amount_display"]?.toString(),
   );
 
