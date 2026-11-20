@@ -805,33 +805,6 @@ class Residentcomplantstatus extends ConsumerStatefulWidget {
 
 class _ResidentcomplantstatusState
     extends ConsumerState<Residentcomplantstatus> {
-  final List<Map<String, dynamic>> statusList = [
-    {
-      "title": "Complaint Raised",
-      "description": "Your complaint was submitted",
-      "status": "completed",
-    },
-    {
-      "title": "Token Generated",
-      "description": "Token #RES-1048 assigned",
-      "status": "completed",
-    },
-    {
-      "title": "Under Review",
-      "description": "Complaint reviewed by association",
-      "status": "completed",
-    },
-    {
-      "title": "In Progress",
-      "description": "Issue is currently being resolved",
-      "status": "current",
-    },
-    {
-      "title": "Resolved",
-      "description": "Complaint will be marked resolved",
-      "status": "pending",
-    },
-  ];
   String? status;
   bool canComplete = false;
   bool _completing = false;
@@ -851,7 +824,11 @@ class _ResidentcomplantstatusState
           ),
           elevation: 0,
         ),
-        icon: Icon(Icons.check_circle_outline, color: Colors.white, size: 18.sp),
+        icon: Icon(
+          Icons.check_circle_outline,
+          color: Colors.white,
+          size: 18.sp,
+        ),
         label: _completing
             ? const SizedBox(
                 width: 20,
@@ -1604,7 +1581,6 @@ class _TimelineItem extends StatelessWidget {
         ),
       );
     }
-
     return Container(
       width: 25.w,
       height: 25.w,

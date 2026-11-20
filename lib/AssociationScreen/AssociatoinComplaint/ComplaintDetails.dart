@@ -4526,10 +4526,10 @@ class ComplaintDetails extends ConsumerStatefulWidget {
 }
 
 class _ComplaintDetailsState extends ConsumerState<ComplaintDetails> {
+  // Society flow ke 5 steps (web / resident / admin sab jagah same naam)
   static const List<String> statuses = [
     'Submitted',
-    'Under Review',
-    'Assigned',
+    'Vendor Assigned',
     'In Progress',
     'Resolved',
     'Closed',
@@ -4541,12 +4541,12 @@ class _ComplaintDetailsState extends ConsumerState<ComplaintDetails> {
   String _statusToApiValue(String status) {
     switch (status.toLowerCase()) {
       case 'submitted':
-        return 'submitted';
       case 'under review':
       case 'review':
       case 'under_review':
-        return 'under_review';
+        return 'submitted';
       case 'assigned':
+      case 'vendor assigned':
         return 'assigned';
       case 'in progress':
       case 'in_progress':
@@ -4566,8 +4566,8 @@ class _ComplaintDetailsState extends ConsumerState<ComplaintDetails> {
     for (final s in statuses) {
       if (s.toLowerCase() == lower) return s;
     }
-    if (lower.contains('review')) return 'Review';
-    if (lower.contains('assign')) return 'Assigned';
+    if (lower.contains('review')) return 'Submitted';
+    if (lower.contains('assign')) return 'Vendor Assigned';
     if (lower.contains('progress')) return 'In Progress';
     if (lower.contains('resolve')) return 'Resolved';
     if (lower.contains('close')) return 'Closed';
@@ -4578,29 +4578,27 @@ class _ComplaintDetailsState extends ConsumerState<ComplaintDetails> {
     final lower = activeStatus.trim().toLowerCase().replaceAll('_', ' ');
 
     int activeIndex = 0;
-    if (lower.contains('review')) {
+    if (lower.contains('assign')) {
       activeIndex = 1;
-    } else if (lower.contains('assign')) {
-      activeIndex = 2;
     } else if (lower.contains('progress')) {
+      activeIndex = 2;
+    } else if (lower.contains('resolve')) {
       activeIndex = 3;
-    } else if (lower.contains('resolve') || lower.contains('close')) {
+    } else if (lower.contains('close')) {
       activeIndex = 4;
     } else {
-      activeIndex = 0;
+      activeIndex = 0; // Submitted (purana "Under Review" bhi)
     }
 
     final stepNames = [
       'Submitted',
-      'Review',
-      'Assigned',
+      'Vendor Assigned',
       'In Progress',
       'Resolved',
       'Closed',
     ];
 
-    final bool isAllCompleted =
-        lower.contains('resolve') || lower.contains('close');
+    final bool isAllCompleted = lower.contains('close');
 
     return List.generate(stepNames.length, (index) {
       if (isAllCompleted) {
@@ -4642,6 +4640,7 @@ class _ComplaintDetailsState extends ConsumerState<ComplaintDetails> {
       case 'under_review':
         return const Color(0xFF7B1FA2); // Purple
       case 'assigned':
+      case 'vendor assigned':
         return const Color(0xFF00796B); // Teal
       case 'in progress':
       case 'in_progress':

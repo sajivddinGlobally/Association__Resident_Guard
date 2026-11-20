@@ -22,30 +22,37 @@ class _ComplaintState extends ConsumerState<Complaint> {
   int selectedFilter = 0;
   String searchQuery = "";
 
+  // Society flow ke naam (web / resident / admin sab jagah same)
   final List<String> filters = [
     "All",
     "High Priority",
-    "Under Review",
+    "Submitted",
+    "Vendor Assigned",
     "In Progress",
+    "Resolved",
   ];
 
   final List<String> selectedFilterStatus = [
     "all",
     "high_priority",
-    "under_review",
+    "submitted",
+    "assigned",
     "in_progress",
+    "resolved",
   ];
 
   String _statusToApiValue(String status) {
     switch (status.toLowerCase()) {
       case 'submitted':
-        return 'Submitted';
       case 'under review':
       case 'review':
       case 'under_review':
-        return 'Under Review';
+      case 'open':
+      case 'pending':
+        return 'Submitted';
       case 'assigned':
-        return 'Assigned';
+      case 'vendor assigned':
+        return 'Vendor Assigned';
       case 'in progress':
       case 'in_progress':
         return 'In Progress';
@@ -278,7 +285,7 @@ class _ComplaintState extends ConsumerState<Complaint> {
                                 value:
                                     complaintState?.highPriority.toString() ??
                                     "",
-                                title: "Under Review",
+                                title: "High Priority",
                               ),
                             ),
 
@@ -773,7 +780,7 @@ class ServiceCard extends StatelessWidget {
                       badgeText = const Color(0xFF333333);
                       badgeBorder = const Color(0xFFD9D9D0);
                     }
-                    
+
                     return Container(
                       padding: EdgeInsets.symmetric(
                         horizontal: 10.w,

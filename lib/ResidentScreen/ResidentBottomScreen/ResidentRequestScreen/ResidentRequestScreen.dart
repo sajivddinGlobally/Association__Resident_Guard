@@ -122,7 +122,9 @@ class _ResidentrequestscreenState extends ConsumerState<Residentrequestscreen> {
         },
         icon: const Icon(Icons.add),
         label: Text(
-          selectedType == 'service_request' ? "New Service Request" : "New Complaint",
+          selectedType == 'service_request'
+              ? "New Service Request"
+              : "New Complaint",
           style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
         ),
       ),
@@ -135,7 +137,7 @@ class _ResidentrequestscreenState extends ConsumerState<Residentrequestscreen> {
               : [
                   FilterTab(key: "all", label: "All"),
                   FilterTab(key: "open", label: "Open"),
-                  FilterTab(key: "in_progress", label: "Under Review"),
+                  FilterTab(key: "in_progress", label: "In Progress"),
                   FilterTab(key: "resolved", label: "Resolved"),
                 ];
 
@@ -263,475 +265,553 @@ class _ResidentrequestscreenState extends ConsumerState<Residentrequestscreen> {
                             physics: const AlwaysScrollableScrollPhysics(),
                             itemCount: visibleRequests.length,
                             itemBuilder: (context, index) {
-                      final request = visibleRequests[index];
-                      return InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            CupertinoPageRoute(
-                              builder: (context) => Residentcomplantstatus(
-                                complainID: request.id.toString(),
-                              ),
-                            ),
-                          );
-                        },
-                        child: Builder(
-                          builder: (context) {
-                            final isEmergency =
-                                request.isEmergency == true ||
-                                (request.status ?? "").toLowerCase().contains(
-                                  "emergency",
-                                ) ||
-                                (request.status ?? "").toLowerCase().contains(
-                                  "overdue",
-                                ) ||
-                                request.isOverdue == true;
+                              final request = visibleRequests[index];
+                              return InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    CupertinoPageRoute(
+                                      builder: (context) =>
+                                          Residentcomplantstatus(
+                                            complainID: request.id.toString(),
+                                          ),
+                                    ),
+                                  );
+                                },
+                                child: Builder(
+                                  builder: (context) {
+                                    final isEmergency =
+                                        request.isEmergency == true ||
+                                        (request.status ?? "")
+                                            .toLowerCase()
+                                            .contains("emergency") ||
+                                        (request.status ?? "")
+                                            .toLowerCase()
+                                            .contains("overdue") ||
+                                        request.isOverdue == true;
 
-                            final Color? apiStatusColor = _parseHexColor(
-                              request.statusColor,
-                            );
+                                    final Color? apiStatusColor =
+                                        _parseHexColor(request.statusColor);
 
-                            Color badgeBg;
-                            Color badgeText;
-                            Border? badgeBorder;
-                            String statusLabel;
+                                    Color badgeBg;
+                                    Color badgeText;
+                                    Border? badgeBorder;
+                                    String statusLabel;
 
-                            final rawStatusLower = (request.status ?? "")
-                                .toLowerCase()
-                                .trim();
-                            final isInProgress =
-                                rawStatusLower == "in progress" ||
-                                rawStatusLower == "in_progress";
+                                    final rawStatusLower =
+                                        (request.status ?? "")
+                                            .toLowerCase()
+                                            .trim();
+                                    final isInProgress =
+                                        rawStatusLower == "in progress" ||
+                                        rawStatusLower == "in_progress";
 
-                            if (isEmergency) {
-                              badgeBg = const Color(0xFFFFEBEE);
-                              badgeText = const Color(0xFFEF4444);
-                              badgeBorder = Border.all(
-                                color: const Color(0xFFEF4444),
-                                width: 1,
-                              );
-                              statusLabel =
-                                  request.status ?? "Emergency (Overdue)";
-                            } else if (apiStatusColor != null) {
-                              badgeBg = apiStatusColor.withOpacity(0.12);
-                              badgeText = apiStatusColor;
-                              badgeBorder = Border.all(
-                                color: apiStatusColor.withOpacity(0.35),
-                                width: 1,
-                              );
-                              statusLabel = request.status ?? "";
-                            } else {
-                              final isResolved =
-                                  rawStatusLower == "resolved" ||
-                                  rawStatusLower == "completed" ||
-                                  rawStatusLower == "closed";
+                                    if (isEmergency) {
+                                      badgeBg = const Color(0xFFFFEBEE);
+                                      badgeText = const Color(0xFFEF4444);
+                                      badgeBorder = Border.all(
+                                        color: const Color(0xFFEF4444),
+                                        width: 1,
+                                      );
+                                      statusLabel =
+                                          request.status ??
+                                          "Emergency (Overdue)";
+                                    } else if (apiStatusColor != null) {
+                                      badgeBg = apiStatusColor.withOpacity(
+                                        0.12,
+                                      );
+                                      badgeText = apiStatusColor;
+                                      badgeBorder = Border.all(
+                                        color: apiStatusColor.withOpacity(0.35),
+                                        width: 1,
+                                      );
+                                      statusLabel = request.status ?? "";
+                                    } else {
+                                      final isResolved =
+                                          rawStatusLower == "resolved" ||
+                                          rawStatusLower == "completed" ||
+                                          rawStatusLower == "closed";
 
-                              if (isResolved) {
-                                badgeBg = const Color(0xFFE8F5E9);
-                                badgeText = const Color(0xFF22C55E);
-                                badgeBorder = Border.all(
-                                  color: const Color(0xFFA5D6A7),
-                                  width: 1,
-                                );
-                                statusLabel = request.status ?? "Resolved";
-                              } else if (isInProgress) {
-                                badgeBg = const Color.fromRGBO(
-                                  184,
-                                  134,
-                                  11,
-                                  0.15,
-                                );
-                                badgeText = const Color(0xFFEAB308);
-                                badgeBorder = Border.all(
-                                  color: const Color(
-                                    0xFFEAB308,
-                                  ).withOpacity(0.3),
-                                  width: 1,
-                                );
-                                statusLabel = request.status ?? "In Progress";
-                              } else {
-                                badgeBg = const Color(0xFFECEFF1);
-                                badgeText = const Color(0xFF455A64);
-                                badgeBorder = null;
-                                statusLabel = request.status ?? "Submitted";
-                              }
-                            }
+                                      if (isResolved) {
+                                        badgeBg = const Color(0xFFE8F5E9);
+                                        badgeText = const Color(0xFF22C55E);
+                                        badgeBorder = Border.all(
+                                          color: const Color(0xFFA5D6A7),
+                                          width: 1,
+                                        );
+                                        statusLabel =
+                                            request.status ?? "Resolved";
+                                      } else if (isInProgress) {
+                                        badgeBg = const Color.fromRGBO(
+                                          184,
+                                          134,
+                                          11,
+                                          0.15,
+                                        );
+                                        badgeText = const Color(0xFFEAB308);
+                                        badgeBorder = Border.all(
+                                          color: const Color(
+                                            0xFFEAB308,
+                                          ).withOpacity(0.3),
+                                          width: 1,
+                                        );
+                                        statusLabel =
+                                            request.status ?? "In Progress";
+                                      } else {
+                                        badgeBg = const Color(0xFFECEFF1);
+                                        badgeText = const Color(0xFF455A64);
+                                        badgeBorder = null;
+                                        statusLabel =
+                                            request.status ?? "Submitted";
+                                      }
+                                    }
 
-                            final areaType =
-                                request.areaType ?? request.issueScope;
-                            final areaLabel =
-                                request.areaTypeLabel ??
-                                (areaType == "common_area"
-                                    ? "Common Area"
-                                    : (areaType == "inside_house"
-                                          ? "Inside House"
-                                          : null));
-                            final bool isCommonArea =
-                                (areaType == "common_area") ||
-                                (areaLabel ?? "").toLowerCase().contains(
-                                  "common",
-                                );
+                                    final areaType =
+                                        request.areaType ?? request.issueScope;
+                                    final areaLabel =
+                                        request.areaTypeLabel ??
+                                        (areaType == "common_area"
+                                            ? "Common Area"
+                                            : (areaType == "inside_house"
+                                                  ? "Inside House"
+                                                  : null));
+                                    final bool isCommonArea =
+                                        (areaType == "common_area") ||
+                                        (areaLabel ?? "")
+                                            .toLowerCase()
+                                            .contains("common");
 
-                            return Container(
-                              padding: EdgeInsets.all(14.w),
-                              margin: EdgeInsets.only(bottom: 12.h),
-                              decoration: BoxDecoration(
-                                color: request.isServiceRequest
-                                    ? const Color(0xFFF5F9FF)
-                                    : null,
-                                border: Border.all(
-                                  color: request.isServiceRequest
-                                      ? const Color(0xFFBFDBFE)
-                                      : const Color.fromRGBO(16, 28, 22, 0.15),
-                                  width: 1,
-                                ),
-                                borderRadius: BorderRadius.circular(10.r),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Row(
-                                          children: [
-                                            Icon(
-                                              request.isServiceRequest
-                                                  ? Icons.build_circle_outlined
-                                                  : Icons.report_problem_outlined,
-                                              size: 18.sp,
-                                              color: request.isServiceRequest
-                                                  ? const Color(0xFF1D4ED8)
-                                                  : const Color(0xFFB8860B),
-                                            ),
-                                            SizedBox(width: 6.w),
-                                            Flexible(
-                                              child: Text(
-                                                request.tokenLabel ??
-                                                    request.tokenNumber ??
-                                                    "N/A",
-                                                overflow: TextOverflow.ellipsis,
-                                                style: GoogleFonts.outfit(
-                                                  fontSize: 16.sp,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: AppColors.heading,
-                                                  letterSpacing: -0.2,
+                                    return Container(
+                                      padding: EdgeInsets.all(14.w),
+                                      margin: EdgeInsets.only(bottom: 12.h),
+                                      decoration: BoxDecoration(
+                                        color: request.isServiceRequest
+                                            ? const Color(0xFFF5F9FF)
+                                            : null,
+                                        border: Border.all(
+                                          color: request.isServiceRequest
+                                              ? const Color(0xFFBFDBFE)
+                                              : const Color.fromRGBO(
+                                                  16,
+                                                  28,
+                                                  22,
+                                                  0.15,
                                                 ),
-                                              ),
-                                            ),
-                                          ],
+                                          width: 1,
+                                        ),
+                                        borderRadius: BorderRadius.circular(
+                                          10.r,
                                         ),
                                       ),
-                                      SizedBox(width: 8.w),
-                                      Container(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: 10.w,
-                                          vertical: 5.h,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: badgeBg,
-                                          border: badgeBorder,
-                                          borderRadius: BorderRadius.circular(
-                                            50.r,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            if (isEmergency) ...[
-                                              Text(
-                                                "🔴 ",
-                                                style: TextStyle(
-                                                  fontSize: 12.sp,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Expanded(
+                                                child: Row(
+                                                  children: [
+                                                    Icon(
+                                                      request.isServiceRequest
+                                                          ? Icons
+                                                                .build_circle_outlined
+                                                          : Icons
+                                                                .report_problem_outlined,
+                                                      size: 18.sp,
+                                                      color:
+                                                          request
+                                                              .isServiceRequest
+                                                          ? const Color(
+                                                              0xFF1D4ED8,
+                                                            )
+                                                          : const Color(
+                                                              0xFFB8860B,
+                                                            ),
+                                                    ),
+                                                    SizedBox(width: 6.w),
+                                                    Flexible(
+                                                      child: Text(
+                                                        request.tokenLabel ??
+                                                            request
+                                                                .tokenNumber ??
+                                                            "N/A",
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style:
+                                                            GoogleFonts.outfit(
+                                                              fontSize: 16.sp,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              color: AppColors
+                                                                  .heading,
+                                                              letterSpacing:
+                                                                  -0.2,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(width: 8.w),
+                                              Container(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: 10.w,
+                                                  vertical: 5.h,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: badgeBg,
+                                                  border: badgeBorder,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        50.r,
+                                                      ),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    if (isEmergency) ...[
+                                                      Text(
+                                                        "🔴 ",
+                                                        style: TextStyle(
+                                                          fontSize: 12.sp,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                    Text(
+                                                      statusLabel,
+                                                      style: GoogleFonts.outfit(
+                                                        fontSize: 15.sp,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: badgeText,
+                                                        letterSpacing: -0.2,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
                                             ],
-                                            Text(
-                                              statusLabel,
-                                              style: GoogleFonts.outfit(
-                                                fontSize: 15.sp,
-                                                fontWeight: FontWeight.w600,
-                                                color: badgeText,
-                                                letterSpacing: -0.2,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 10.h),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          request.title ?? "N/A",
-                                          style: GoogleFonts.outfit(
-                                            fontSize: 18.sp,
-                                            fontWeight: FontWeight.w600,
-                                            color: AppColors.heading,
-                                            letterSpacing: -0.2,
                                           ),
-                                        ),
-                                      ),
-                                      if (areaLabel != null) ...[
-                                        SizedBox(width: 8.w),
-                                        Container(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 8.w,
-                                            vertical: 4.h,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: isCommonArea
-                                                ? const Color(0xFFEFF6FF)
-                                                : const Color(0xFFFBF4E6),
-                                            border: Border.all(
-                                              color: isCommonArea
-                                                  ? const Color(0xFFBFDBFE)
-                                                  : const Color(0xFFE6D2A8),
-                                              width: 0.8,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              6.r,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            "${isCommonArea ? '🏢 ' : '🏠 '}$areaLabel",
-                                            style: GoogleFonts.outfit(
-                                              fontSize: 13.sp,
-                                              fontWeight: FontWeight.w600,
-                                              color: isCommonArea
-                                                  ? const Color(0xFF1D4ED8)
-                                                  : const Color(0xFFB8860B),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                  SizedBox(height: 10.h),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.location_on_outlined,
-                                        color: const Color(0xffB8860B),
-                                        size: 18.sp,
-                                      ),
-                                      SizedBox(width: 4.w),
-                                      Expanded(
-                                        child: Text(
-                                          request.location ?? "N/A",
-                                          style: GoogleFonts.outfit(
-                                            fontSize: 15.sp,
-                                            fontWeight: FontWeight.w500,
-                                            color: AppColors.heading,
-                                            letterSpacing: -0.2,
-                                          ),
-                                        ),
-                                      ),
-                                      if (request.canMarkCompleted) ...[
-                                        GestureDetector(
-                                          onTap: () => showMarkCompletedFlow(
-                                            context: context,
-                                            ref: ref,
-                                            id: request.id.toString(),
-                                          ),
-                                          child: Container(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: 10.w,
-                                              vertical: 5.h,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xff16B364),
-                                              borderRadius:
-                                                  BorderRadius.circular(6.r),
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(
-                                                  Icons.check_circle_outline,
-                                                  color: Colors.white,
-                                                  size: 13.sp,
-                                                ),
-                                                SizedBox(width: 4.w),
-                                                Text(
-                                                  "Mark Completed",
+                                          SizedBox(height: 10.h),
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  request.title ?? "N/A",
                                                   style: GoogleFonts.outfit(
-                                                    fontSize: 13.sp,
+                                                    fontSize: 18.sp,
                                                     fontWeight: FontWeight.w600,
-                                                    color: Colors.white,
+                                                    color: AppColors.heading,
+                                                    letterSpacing: -0.2,
+                                                  ),
+                                                ),
+                                              ),
+                                              if (areaLabel != null) ...[
+                                                SizedBox(width: 8.w),
+                                                Container(
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal: 8.w,
+                                                    vertical: 4.h,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: isCommonArea
+                                                        ? const Color(
+                                                            0xFFEFF6FF,
+                                                          )
+                                                        : const Color(
+                                                            0xFFFBF4E6,
+                                                          ),
+                                                    border: Border.all(
+                                                      color: isCommonArea
+                                                          ? const Color(
+                                                              0xFFBFDBFE,
+                                                            )
+                                                          : const Color(
+                                                              0xFFE6D2A8,
+                                                            ),
+                                                      width: 0.8,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          6.r,
+                                                        ),
+                                                  ),
+                                                  child: Text(
+                                                    "${isCommonArea ? '🏢 ' : '🏠 '}$areaLabel",
+                                                    style: GoogleFonts.outfit(
+                                                      fontSize: 13.sp,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      color: isCommonArea
+                                                          ? const Color(
+                                                              0xFF1D4ED8,
+                                                            )
+                                                          : const Color(
+                                                              0xFFB8860B,
+                                                            ),
+                                                    ),
                                                   ),
                                                 ),
                                               ],
-                                            ),
+                                            ],
                                           ),
-                                        ),
-                                      ],
-                                      if (request.status == 'Resolved') ...[
-                                        GestureDetector(
-                                          onTap: () {
-                                            showDialog(
-                                              context: context,
-                                              barrierDismissible: false,
-                                              builder: (dialogContext) {
-                                                bool isDialogLoading = false;
-                                                return StatefulBuilder(
-                                                  builder: (context, setDialogState) {
-                                                    return AlertDialog(
-                                                      title: Text(
-                                                        "Close Request",
+                                          SizedBox(height: 10.h),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.location_on_outlined,
+                                                color: const Color(0xffB8860B),
+                                                size: 18.sp,
+                                              ),
+                                              SizedBox(width: 4.w),
+                                              Expanded(
+                                                child: Text(
+                                                  request.location ?? "N/A",
+                                                  style: GoogleFonts.outfit(
+                                                    fontSize: 15.sp,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: AppColors.heading,
+                                                    letterSpacing: -0.2,
+                                                  ),
+                                                ),
+                                              ),
+                                              if (request.canMarkCompleted) ...[
+                                                GestureDetector(
+                                                  onTap: () =>
+                                                      showMarkCompletedFlow(
+                                                        context: context,
+                                                        ref: ref,
+                                                        id: request.id
+                                                            .toString(),
                                                       ),
-                                                      content: Text(
-                                                        "Are you sure you want to close this request?",
-                                                      ),
-                                                      actions: [
-                                                        TextButton(
-                                                          onPressed:
-                                                              isDialogLoading
-                                                              ? null
-                                                              : () => Navigator.pop(
-                                                                  dialogContext,
-                                                                ),
-                                                          child: Text("Cancel"),
+                                                  child: Container(
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                          horizontal: 10.w,
+                                                          vertical: 5.h,
                                                         ),
-                                                        TextButton(
-                                                          onPressed:
-                                                              isDialogLoading
-                                                              ? null
-                                                              : () async {
-                                                                  setDialogState(
-                                                                    () {
-                                                                      isDialogLoading =
-                                                                          true;
-                                                                    },
-                                                                  );
-                                                                  try {
-                                                                    final service =
-                                                                        ref.read(
-                                                                          authServiceProvider,
-                                                                        );
-                                                                    final res = await service.closeComplant(
-                                                                      id: request!
-                                                                          .id
-                                                                          .toString(),
-                                                                    );
-                                                                    if (res.status ==
-                                                                        true) {
-                                                                      ref.invalidate(
-                                                                        getComplaintListProvider,
-                                                                      );
-                                                                      if (dialogContext
-                                                                          .mounted) {
-                                                                        Navigator.pop(
-                                                                          dialogContext,
-                                                                        );
-                                                                      }
-                                                                      showSuccessSnackBar(
-                                                                        res.message ??
-                                                                            "Request closed successfully",
-                                                                      );
-                                                                    } else {
-                                                                      showSuccessSnackBar(
-                                                                        res.message ??
-                                                                            "Failed to close request",
-                                                                      );
-                                                                    }
-                                                                  } catch (e) {
-                                                                    showSuccessSnackBar(
-                                                                      "Failed to close request",
-                                                                    );
-                                                                  } finally {
-                                                                    if (dialogContext
-                                                                        .mounted) {
-                                                                      setDialogState(() {
-                                                                        isDialogLoading =
-                                                                            false;
-                                                                      });
-                                                                    }
-                                                                  }
-                                                                },
-                                                          child: isDialogLoading
-                                                              ? SizedBox(
-                                                                  width: 18.w,
-                                                                  height: 18.h,
-                                                                  child: CircularProgressIndicator(
-                                                                    strokeWidth:
-                                                                        2.w,
-                                                                    color: AppColors
-                                                                        .heading,
-                                                                  ),
-                                                                )
-                                                              : Text("Close"),
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(
+                                                        0xff16B364,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            6.r,
+                                                          ),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        Icon(
+                                                          Icons
+                                                              .check_circle_outline,
+                                                          color: Colors.white,
+                                                          size: 13.sp,
+                                                        ),
+                                                        SizedBox(width: 4.w),
+                                                        Text(
+                                                          "Mark Completed",
+                                                          style:
+                                                              GoogleFonts.outfit(
+                                                                fontSize: 13.sp,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
                                                         ),
                                                       ],
-                                                    );
-                                                  },
-                                                );
-                                              },
-                                            );
-                                          },
-                                          child: Container(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: 10.w,
-                                              vertical: 5.h,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xff071811),
-                                              borderRadius:
-                                                  BorderRadius.circular(6.r),
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(
-                                                  Icons.close,
-                                                  color: Colors.white,
-                                                  size: 13.sp,
-                                                ),
-                                                SizedBox(width: 4.w),
-                                                Text(
-                                                  "Close",
-                                                  style: GoogleFonts.outfit(
-                                                    fontSize: 13.sp,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.white,
+                                                    ),
                                                   ),
                                                 ),
                                               ],
-                                            ),
+                                              if (request.status ==
+                                                  'Resolved') ...[
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    showDialog(
+                                                      context: context,
+                                                      barrierDismissible: false,
+                                                      builder: (dialogContext) {
+                                                        bool isDialogLoading =
+                                                            false;
+                                                        return StatefulBuilder(
+                                                          builder:
+                                                              (
+                                                                context,
+                                                                setDialogState,
+                                                              ) {
+                                                                return AlertDialog(
+                                                                  title: Text(
+                                                                    "Close Request",
+                                                                  ),
+                                                                  content: Text(
+                                                                    "Are you sure you want to close this request?",
+                                                                  ),
+                                                                  actions: [
+                                                                    TextButton(
+                                                                      onPressed:
+                                                                          isDialogLoading
+                                                                          ? null
+                                                                          : () => Navigator.pop(
+                                                                              dialogContext,
+                                                                            ),
+                                                                      child: Text(
+                                                                        "Cancel",
+                                                                      ),
+                                                                    ),
+                                                                    TextButton(
+                                                                      onPressed:
+                                                                          isDialogLoading
+                                                                          ? null
+                                                                          : () async {
+                                                                              setDialogState(
+                                                                                () {
+                                                                                  isDialogLoading = true;
+                                                                                },
+                                                                              );
+                                                                              try {
+                                                                                final service = ref.read(
+                                                                                  authServiceProvider,
+                                                                                );
+                                                                                final res = await service.closeComplant(
+                                                                                  id: request!.id.toString(),
+                                                                                );
+                                                                                if (res.status ==
+                                                                                    true) {
+                                                                                  ref.invalidate(
+                                                                                    getComplaintListProvider,
+                                                                                  );
+                                                                                  if (dialogContext.mounted) {
+                                                                                    Navigator.pop(
+                                                                                      dialogContext,
+                                                                                    );
+                                                                                  }
+                                                                                  showSuccessSnackBar(
+                                                                                    res.message ??
+                                                                                        "Request closed successfully",
+                                                                                  );
+                                                                                } else {
+                                                                                  showSuccessSnackBar(
+                                                                                    res.message ??
+                                                                                        "Failed to close request",
+                                                                                  );
+                                                                                }
+                                                                              } catch (
+                                                                                e
+                                                                              ) {
+                                                                                showSuccessSnackBar(
+                                                                                  "Failed to close request",
+                                                                                );
+                                                                              } finally {
+                                                                                if (dialogContext.mounted) {
+                                                                                  setDialogState(
+                                                                                    () {
+                                                                                      isDialogLoading = false;
+                                                                                    },
+                                                                                  );
+                                                                                }
+                                                                              }
+                                                                            },
+                                                                      child:
+                                                                          isDialogLoading
+                                                                          ? SizedBox(
+                                                                              width: 18.w,
+                                                                              height: 18.h,
+                                                                              child: CircularProgressIndicator(
+                                                                                strokeWidth: 2.w,
+                                                                                color: AppColors.heading,
+                                                                              ),
+                                                                            )
+                                                                          : Text(
+                                                                              "Close",
+                                                                            ),
+                                                                    ),
+                                                                  ],
+                                                                );
+                                                              },
+                                                        );
+                                                      },
+                                                    );
+                                                  },
+                                                  child: Container(
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                          horizontal: 10.w,
+                                                          vertical: 5.h,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(
+                                                        0xff071811,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            6.r,
+                                                          ),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        Icon(
+                                                          Icons.close,
+                                                          color: Colors.white,
+                                                          size: 13.sp,
+                                                        ),
+                                                        SizedBox(width: 4.w),
+                                                        Text(
+                                                          "Close",
+                                                          style:
+                                                              GoogleFonts.outfit(
+                                                                fontSize: 13.sp,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                              SizedBox(width: 10.w),
+                                              Text(
+                                                "View Details  →",
+                                                style: GoogleFonts.outfit(
+                                                  fontSize: 16.sp,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: const Color(
+                                                    0xffB8860B,
+                                                  ),
+                                                  letterSpacing: -0.2,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ),
-                                      ],
-                                      SizedBox(width: 10.w),
-                                      Text(
-                                        "View Details  →",
-                                        style: GoogleFonts.outfit(
-                                          fontSize: 16.sp,
-                                          fontWeight: FontWeight.w500,
-                                          color: const Color(0xffB8860B),
-                                          letterSpacing: -0.2,
-                                        ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    },
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                          ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      },
-      error: (error, stackTrace) {
+          );
+        },
+        error: (error, stackTrace) {
           return RefreshIndicator(
             color: AppColors.heading,
             backgroundColor: AppColors.scaffoldBg,
