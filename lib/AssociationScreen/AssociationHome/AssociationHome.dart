@@ -5147,7 +5147,6 @@ class _AssociationHomeState extends ConsumerState<AssociationHome> {
                   margin: EdgeInsets.only(bottom: 8.h),
                   padding: EdgeInsets.all(10.w),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF9F9F9),
                     border: Border.all(
                       color: const Color.fromRGBO(0, 0, 0, 0.1),
                       width: 1.w,

@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -128,7 +127,7 @@ class _AssociationCaretakersScreenState
                       Text(
                         isEdit ? "Edit Caretaker" : "Add Caretaker",
                         style: GoogleFonts.outfit(
-                          fontSize: 18.sp,
+                          fontSize: 20.sp,
                           fontWeight: FontWeight.w700,
                           color: AppColors.heading,
                         ),
@@ -137,7 +136,7 @@ class _AssociationCaretakersScreenState
                       Text(
                         "Caretaker is a contact only (no login). Assign units from Unit Details → Edit.",
                         style: GoogleFonts.outfit(
-                          fontSize: 12.5.sp,
+                          fontSize: 14.sp,
                           color: const Color.fromRGBO(42, 41, 51, 0.7),
                         ),
                       ),
@@ -154,15 +153,15 @@ class _AssociationCaretakersScreenState
                         "e.g. 9876543210",
                         TextInputType.phone,
                       ),
-                      SizedBox(height: 6.h),
+                      SizedBox(height: 8.h),
                       SizedBox(
                         width: double.infinity,
-                        height: 46.h,
+                        height: 48.h,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.heading,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(6.r),
+                              borderRadius: BorderRadius.circular(8.r),
                             ),
                           ),
                           onPressed: saving
@@ -216,8 +215,9 @@ class _AssociationCaretakersScreenState
                                   } catch (e) {
                                     // Server ka error message dio interceptor dikha deta hai
                                   } finally {
-                                    if (ctx.mounted)
+                                    if (ctx.mounted) {
                                       setSheet(() => saving = false);
+                                    }
                                   }
                                 },
                           child: saving
@@ -232,8 +232,8 @@ class _AssociationCaretakersScreenState
                               : Text(
                                   isEdit ? "Save Changes" : "Add Caretaker",
                                   style: GoogleFonts.outfit(
-                                    fontSize: 14.sp,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: 15.5.sp,
+                                    fontWeight: FontWeight.w700,
                                     color: Colors.white,
                                   ),
                                 ),
@@ -257,22 +257,22 @@ class _AssociationCaretakersScreenState
     TextInputType type,
   ) {
     final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(6.r),
+      borderRadius: BorderRadius.circular(8.r),
       borderSide: const BorderSide(
-        color: Color.fromRGBO(16, 28, 22, 0.6),
+        color: Color.fromRGBO(16, 28, 22, 0.4),
         width: 1.2,
       ),
     );
     return Padding(
-      padding: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.only(bottom: 14.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
             style: GoogleFonts.outfit(
-              fontSize: 11.5.sp,
-              fontWeight: FontWeight.w600,
+              fontSize: 13.5.sp,
+              fontWeight: FontWeight.w700,
               color: AppColors.heading,
               letterSpacing: 0.2,
             ),
@@ -284,7 +284,7 @@ class _AssociationCaretakersScreenState
             maxLength: type == TextInputType.phone ? 20 : 100,
             cursorColor: AppColors.heading,
             style: GoogleFonts.outfit(
-              fontSize: 14.sp,
+              fontSize: 15.sp,
               fontWeight: FontWeight.w500,
               color: AppColors.heading,
             ),
@@ -292,13 +292,13 @@ class _AssociationCaretakersScreenState
               counterText: "",
               hintText: hint,
               hintStyle: GoogleFonts.outfit(
-                fontSize: 13.5.sp,
-                color: const Color.fromRGBO(16, 28, 22, 0.4),
+                fontSize: 14.5.sp,
+                color: const Color.fromRGBO(16, 28, 22, 0.45),
               ),
               isDense: true,
               contentPadding: EdgeInsets.symmetric(
                 horizontal: 14.w,
-                vertical: 12.h,
+                vertical: 13.h,
               ),
               border: border,
               enabledBorder: border,
@@ -329,7 +329,7 @@ class _AssociationCaretakersScreenState
               title: Text(
                 "Remove Caretaker?",
                 style: GoogleFonts.outfit(
-                  fontSize: 18.sp,
+                  fontSize: 20.sp,
                   fontWeight: FontWeight.w700,
                   color: AppColors.heading,
                 ),
@@ -339,7 +339,7 @@ class _AssociationCaretakersScreenState
                 "${count > 0 ? " $count ${count == 1 ? "unit" : "units"} assigned to this caretaker will show \"Caretaker not assigned\"." : ""}"
                 " Units and residents are not deleted.",
                 style: GoogleFonts.outfit(
-                  fontSize: 14.sp,
+                  fontSize: 15.sp,
                   color: const Color.fromRGBO(42, 41, 51, 0.8),
                 ),
               ),
@@ -348,7 +348,11 @@ class _AssociationCaretakersScreenState
                   onPressed: removing ? null : () => Navigator.pop(dCtx),
                   child: Text(
                     "Cancel",
-                    style: GoogleFonts.outfit(color: AppColors.heading),
+                    style: GoogleFonts.outfit(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.heading,
+                    ),
                   ),
                 ),
                 TextButton(
@@ -383,8 +387,9 @@ class _AssociationCaretakersScreenState
                   child: Text(
                     removing ? "Removing..." : "Remove",
                     style: GoogleFonts.outfit(
+                      fontSize: 15.sp,
                       color: const Color(0xFFDC2626),
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -427,7 +432,7 @@ class _AssociationCaretakersScreenState
                 child: Icon(
                   Icons.arrow_back,
                   color: AppColors.heading,
-                  size: 20.sp,
+                  size: 22.sp,
                 ),
               ),
             ),
@@ -439,8 +444,8 @@ class _AssociationCaretakersScreenState
                   Text(
                     "Caretakers",
                     style: GoogleFonts.outfit(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.heading,
                       letterSpacing: -0.3,
                     ),
@@ -451,7 +456,7 @@ class _AssociationCaretakersScreenState
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.outfit(
-                      fontSize: 14.sp,
+                      fontSize: 14.5.sp,
                       color: const Color.fromRGBO(42, 41, 51, 0.7),
                     ),
                   ),
@@ -462,8 +467,8 @@ class _AssociationCaretakersScreenState
               GestureDetector(
                 onTap: () => _openForm(),
                 child: Container(
-                  height: 40.h,
-                  padding: EdgeInsets.symmetric(horizontal: 12.w),
+                  height: 42.h,
+                  padding: EdgeInsets.symmetric(horizontal: 14.w),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: AppColors.heading,
@@ -472,12 +477,12 @@ class _AssociationCaretakersScreenState
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.add, color: Colors.white, size: 18.sp),
+                      Icon(Icons.add, color: Colors.white, size: 19.sp),
                       SizedBox(width: 4.w),
                       Text(
                         "Add",
                         style: GoogleFonts.outfit(
-                          fontSize: 14.sp,
+                          fontSize: 15.sp,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
@@ -500,39 +505,46 @@ class _AssociationCaretakersScreenState
               onChanged: (v) => setState(() => _search = v),
               cursorColor: AppColors.heading,
               style: GoogleFonts.outfit(
-                fontSize: 14.sp,
+                fontSize: 18.sp,
                 color: AppColors.heading,
               ),
               decoration: InputDecoration(
                 hintText: "Search name or number",
                 hintStyle: GoogleFonts.outfit(
-                  fontSize: 13.5.sp,
-                  color: const Color.fromRGBO(16, 28, 22, 0.4),
+                  fontSize: 16.sp,
+                  color: const Color.fromRGBO(16, 28, 22, 0.45),
                 ),
                 prefixIcon: Icon(
                   Icons.search,
-                  size: 20.sp,
+                  size: 21.sp,
                   color: const Color.fromRGBO(16, 28, 22, 0.5),
                 ),
                 isDense: true,
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+                filled: false,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 14.w,
+                  vertical: 13.h,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
                   borderSide: const BorderSide(
-                    color: Color.fromRGBO(0, 0, 0, 0.15),
+                    color: Color.fromRGBO(16, 28, 22, 0.35),
+                    width: 1.2,
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
                   borderSide: const BorderSide(
-                    color: Color.fromRGBO(0, 0, 0, 0.15),
+                    color: Color.fromRGBO(16, 28, 22, 0.35),
+                    width: 1.2,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
-                  borderSide: const BorderSide(color: AppColors.heading),
+                  borderSide: const BorderSide(
+                    color: AppColors.heading,
+                    width: 1.5,
+                  ),
                 ),
               ),
             ),
@@ -567,25 +579,26 @@ class _AssociationCaretakersScreenState
         children: [
           Icon(
             Icons.support_agent,
-            size: 44.sp,
+            size: 48.sp,
             color: const Color.fromRGBO(16, 28, 22, 0.3),
           ),
-          SizedBox(height: 10.h),
+          SizedBox(height: 12.h),
           Text(
             text,
             textAlign: TextAlign.center,
             style: GoogleFonts.outfit(
-              fontSize: 14.sp,
+              fontSize: 15.sp,
               color: const Color.fromRGBO(42, 41, 51, 0.7),
             ),
           ),
           if (showRetry) ...[
-            SizedBox(height: 10.h),
+            SizedBox(height: 12.h),
             TextButton(
               onPressed: _load,
               child: Text(
                 "Retry",
                 style: GoogleFonts.outfit(
+                  fontSize: 15.sp,
                   color: AppColors.heading,
                   fontWeight: FontWeight.w600,
                 ),
@@ -611,8 +624,11 @@ class _AssociationCaretakersScreenState
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: const Color.fromRGBO(0, 0, 0, 0.1)),
+        color: AppColors.scaffoldBg,
+        border: Border.all(
+          color: const Color.fromRGBO(16, 28, 22, 0.25),
+          width: 1.2.w,
+        ),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
@@ -630,12 +646,12 @@ class _AssociationCaretakersScreenState
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.outfit(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.heading,
                       ),
                     ),
-                    SizedBox(height: 4.h),
+                    SizedBox(height: 5.h),
                     GestureDetector(
                       onTap: () => _call(c),
                       child: Row(
@@ -643,16 +659,16 @@ class _AssociationCaretakersScreenState
                         children: [
                           Icon(
                             Icons.call,
-                            size: 15.sp,
+                            size: 17.sp,
                             color: const Color(0xFFB8860B),
                           ),
-                          SizedBox(width: 4.w),
+                          SizedBox(width: 5.w),
                           Text(
                             (c["phone"] ?? "-").toString(),
                             style: GoogleFonts.outfit(
-                              fontSize: 13.5.sp,
+                              fontSize: 15.sp,
                               fontWeight: FontWeight.w500,
-                              color: const Color.fromRGBO(42, 41, 51, 0.8),
+                              color: const Color.fromRGBO(42, 41, 51, 0.85),
                             ),
                           ),
                         ],
@@ -662,7 +678,7 @@ class _AssociationCaretakersScreenState
                 ),
               ),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: const Color.fromRGBO(36, 176, 106, 0.15),
                   borderRadius: BorderRadius.circular(60),
@@ -670,7 +686,7 @@ class _AssociationCaretakersScreenState
                 child: Text(
                   "$count ${count == 1 ? "Unit" : "Units"}",
                   style: GoogleFonts.outfit(
-                    fontSize: 12.5.sp,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF24B06A),
                   ),
@@ -678,13 +694,13 @@ class _AssociationCaretakersScreenState
               ),
             ],
           ),
-          SizedBox(height: 10.h),
+          SizedBox(height: 12.h),
           if (units.isEmpty)
             Text(
               "No units assigned yet · assign from Unit Details → Edit",
               style: GoogleFonts.outfit(
-                fontSize: 12.sp,
-                color: const Color.fromRGBO(42, 41, 51, 0.6),
+                fontSize: 14.sp,
+                color: const Color.fromRGBO(42, 41, 51, 0.65),
               ),
             )
           else
@@ -698,7 +714,7 @@ class _AssociationCaretakersScreenState
                       (u) => Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: 10.w,
-                          vertical: 3.h,
+                          vertical: 4.h,
                         ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF2EFE8),
@@ -707,7 +723,7 @@ class _AssociationCaretakersScreenState
                         child: Text(
                           "${u["unit_number"] ?? "-"}${(u["block"] ?? "").toString().isNotEmpty ? " · ${u["block"]}" : ""}",
                           style: GoogleFonts.outfit(
-                            fontSize: 12.sp,
+                            fontSize: 13.5.sp,
                             fontWeight: FontWeight.w500,
                             color: AppColors.heading,
                           ),
@@ -716,12 +732,12 @@ class _AssociationCaretakersScreenState
                     ),
                 if (units.length > 6)
                   Padding(
-                    padding: EdgeInsets.only(top: 3.h),
+                    padding: EdgeInsets.only(top: 4.h),
                     child: Text(
                       "+${units.length - 6} more",
                       style: GoogleFonts.outfit(
-                        fontSize: 12.sp,
-                        color: const Color.fromRGBO(42, 41, 51, 0.6),
+                        fontSize: 13.5.sp,
+                        color: const Color.fromRGBO(42, 41, 51, 0.65),
                       ),
                     ),
                   ),
@@ -736,29 +752,31 @@ class _AssociationCaretakersScreenState
                   onPressed: () => _openForm(caretaker: c),
                   icon: Icon(
                     Icons.edit_outlined,
-                    size: 17.sp,
+                    size: 18.sp,
                     color: AppColors.heading,
                   ),
                   label: Text(
                     "Edit",
                     style: GoogleFonts.outfit(
-                      fontSize: 13.5.sp,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.heading,
                     ),
                   ),
                 ),
-                SizedBox(width: 4.w),
+                SizedBox(width: 6.w),
                 TextButton.icon(
                   onPressed: () => _confirmRemove(c),
                   icon: Icon(
                     Icons.delete_outline,
-                    size: 17.sp,
+                    size: 18.sp,
                     color: const Color(0xFFDC2626),
                   ),
                   label: Text(
                     "Remove",
                     style: GoogleFonts.outfit(
-                      fontSize: 13.5.sp,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
                       color: const Color(0xFFDC2626),
                     ),
                   ),

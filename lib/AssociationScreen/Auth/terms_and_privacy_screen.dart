@@ -16,6 +16,11 @@ class _TermsAndPrivacyScreenState extends State<TermsAndPrivacyScreen> {
   late int _selectedTab;
   final ScrollController _scrollController = ScrollController();
 
+  // 3 Primary Colors: Beech (Background), Golden, and Black
+  static const Color _bg = AppColors.scaffoldBg; // Beech
+  static const Color _gold = Color(0xFFB8860B); // Rich Golden
+  static const Color _black = Color(0xFF101C16); // Deep Black
+
   @override
   void initState() {
     super.initState();
@@ -42,14 +47,14 @@ class _TermsAndPrivacyScreenState extends State<TermsAndPrivacyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBg,
+      backgroundColor: _bg,
       body: SafeArea(
         child: Column(
           children: [
             _buildTopAppBar(),
             SizedBox(height: 10.h),
             _buildTabSelector(),
-            SizedBox(height: 12.h),
+            SizedBox(height: 14.h),
             Expanded(
               child: SingleChildScrollView(
                 controller: _scrollController,
@@ -82,20 +87,14 @@ class _TermsAndPrivacyScreenState extends State<TermsAndPrivacyScreen> {
             onTap: () => Navigator.pop(context),
             borderRadius: BorderRadius.circular(6.r),
             child: Container(
-              width: 42.w,
-              height: 42.w,
+              width: 44.w,
+              height: 44.w,
               decoration: BoxDecoration(
-                border: Border.all(
-                  color: const Color.fromRGBO(16, 28, 22, 0.3),
-                  width: 1.w,
-                ),
-                borderRadius: BorderRadius.circular(6.r),
+                color: Colors.transparent,
+                border: Border.all(color: _black, width: 1.2.w),
+                borderRadius: BorderRadius.circular(8.r),
               ),
-              child: Icon(
-                Icons.arrow_back,
-                color: const Color(0xff101C16),
-                size: 20.sp,
-              ),
+              child: Icon(Icons.arrow_back, color: _black, size: 22.sp),
             ),
           ),
           SizedBox(width: 14.w),
@@ -109,9 +108,9 @@ class _TermsAndPrivacyScreenState extends State<TermsAndPrivacyScreen> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.outfit(
-                    fontSize: 18.sp,
+                    fontSize: 20.sp,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.heading,
+                    color: _black,
                     letterSpacing: -0.3,
                   ),
                 ),
@@ -121,9 +120,9 @@ class _TermsAndPrivacyScreenState extends State<TermsAndPrivacyScreen> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.outfit(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w400,
-                    color: const Color.fromRGBO(42, 41, 51, 0.7),
+                    fontSize: 13.5.sp,
+                    fontWeight: FontWeight.w600,
+                    color: _gold,
                   ),
                 ),
               ],
@@ -140,12 +139,9 @@ class _TermsAndPrivacyScreenState extends State<TermsAndPrivacyScreen> {
       child: Container(
         padding: EdgeInsets.all(4.w),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10.r),
-          border: Border.all(
-            color: const Color(0xFF101C16).withValues(alpha: 0.15),
-            width: 1.w,
-          ),
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(30.r),
+          border: Border.all(color: _gold, width: 1.5.w),
         ),
         child: Row(
           children: [
@@ -153,22 +149,18 @@ class _TermsAndPrivacyScreenState extends State<TermsAndPrivacyScreen> {
               child: GestureDetector(
                 onTap: () => _switchTab(0),
                 child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 10.h),
+                  padding: EdgeInsets.symmetric(vertical: 11.h),
                   decoration: BoxDecoration(
-                    color: _selectedTab == 0
-                        ? const Color(0xFF101C16)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(8.r),
+                    color: _selectedTab == 0 ? _black : Colors.transparent,
+                    borderRadius: BorderRadius.circular(26.r),
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     "Terms & Conditions",
                     style: GoogleFonts.outfit(
-                      fontSize: 13.5.sp,
-                      fontWeight: FontWeight.w600,
-                      color: _selectedTab == 0
-                          ? Colors.white
-                          : const Color(0xFF101C16),
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700,
+                      color: _selectedTab == 0 ? Colors.white : _black,
                       letterSpacing: -0.2,
                     ),
                   ),
@@ -180,22 +172,18 @@ class _TermsAndPrivacyScreenState extends State<TermsAndPrivacyScreen> {
               child: GestureDetector(
                 onTap: () => _switchTab(1),
                 child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 10.h),
+                  padding: EdgeInsets.symmetric(vertical: 11.h),
                   decoration: BoxDecoration(
-                    color: _selectedTab == 1
-                        ? const Color(0xFF101C16)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(8.r),
+                    color: _selectedTab == 1 ? _black : Colors.transparent,
+                    borderRadius: BorderRadius.circular(26.r),
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     "Privacy Policy",
                     style: GoogleFonts.outfit(
-                      fontSize: 13.5.sp,
-                      fontWeight: FontWeight.w600,
-                      color: _selectedTab == 1
-                          ? Colors.white
-                          : const Color(0xFF101C16),
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700,
+                      color: _selectedTab == 1 ? Colors.white : _black,
                       letterSpacing: -0.2,
                     ),
                   ),
@@ -216,11 +204,11 @@ class _TermsAndPrivacyScreenState extends State<TermsAndPrivacyScreen> {
     return Container(
       width: double.infinity,
       margin: EdgeInsets.only(bottom: 16.h),
-      padding: EdgeInsets.all(14.w),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _bg,
         borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: const Color(0xFF101C16), width: 1.2.w),
+        border: Border.all(color: _gold, width: 1.5.w),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,26 +218,30 @@ class _TermsAndPrivacyScreenState extends State<TermsAndPrivacyScreen> {
               ClipOval(
                 child: Image.asset(
                   "assets/updatelogo.jpeg",
-                  width: 38.w,
-                  height: 38.w,
+                  width: 44.w,
+                  height: 44.w,
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
-                    width: 38.w,
-                    height: 38.w,
-                    color: const Color(0xFF101C16),
+                    width: 44.w,
+                    height: 44.w,
+                    decoration: BoxDecoration(
+                      color: _black,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: _gold, width: 1.w),
+                    ),
                     alignment: Alignment.center,
                     child: Text(
                       "S",
                       style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
-                        fontSize: 20.sp,
+                        fontSize: 22.sp,
                       ),
                     ),
                   ),
                 ),
               ),
-              SizedBox(width: 10.w),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -257,18 +249,19 @@ class _TermsAndPrivacyScreenState extends State<TermsAndPrivacyScreen> {
                     Text(
                       title,
                       style: GoogleFonts.outfit(
-                        fontSize: 16.sp,
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.heading,
+                        color: _black,
                         letterSpacing: -0.3,
                       ),
                     ),
+                    SizedBox(height: 2.h),
                     Text(
                       subtitle,
                       style: GoogleFonts.outfit(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w500,
-                        color: const Color.fromRGBO(42, 41, 51, 0.7),
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: _gold,
                       ),
                     ),
                   ],
@@ -277,22 +270,22 @@ class _TermsAndPrivacyScreenState extends State<TermsAndPrivacyScreen> {
             ],
           ),
           SizedBox(height: 12.h),
-          Divider(color: Colors.grey.shade300, height: 1.h),
-          SizedBox(height: 10.h),
+          Divider(color: _gold.withValues(alpha: 0.35), height: 1.5.h),
+          SizedBox(height: 12.h),
           ...meta.entries.map((e) {
             return Padding(
-              padding: EdgeInsets.symmetric(vertical: 3.h),
+              padding: EdgeInsets.symmetric(vertical: 4.h),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(
-                    width: 130.w,
+                    width: 135.w,
                     child: Text(
                       e.key,
                       style: GoogleFonts.outfit(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF101C16),
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700,
+                        color: _black,
                       ),
                     ),
                   ),
@@ -300,9 +293,9 @@ class _TermsAndPrivacyScreenState extends State<TermsAndPrivacyScreen> {
                     child: Text(
                       e.value,
                       style: GoogleFonts.outfit(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w400,
-                        color: const Color.fromRGBO(42, 41, 51, 0.85),
+                        fontSize: 14.5.sp,
+                        fontWeight: FontWeight.w500,
+                        color: _black,
                       ),
                     ),
                   ),
@@ -323,14 +316,11 @@ class _TermsAndPrivacyScreenState extends State<TermsAndPrivacyScreen> {
     return Container(
       width: double.infinity,
       margin: EdgeInsets.only(bottom: 14.h),
-      padding: EdgeInsets.all(14.w),
+      padding: EdgeInsets.all(15.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _bg,
         borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(
-          color: const Color(0xFF101C16).withValues(alpha: 0.18),
-          width: 1.w,
-        ),
+        border: Border.all(color: _black.withValues(alpha: 0.28), width: 1.2.w),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -339,38 +329,38 @@ class _TermsAndPrivacyScreenState extends State<TermsAndPrivacyScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                width: 30.w,
-                height: 30.w,
+                width: 32.w,
+                height: 32.w,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF101C16),
+                  color: _black,
                   borderRadius: BorderRadius.circular(6.r),
                 ),
                 child: Text(
                   number,
                   style: GoogleFonts.outfit(
-                    fontSize: 13.sp,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                     letterSpacing: -0.2,
                   ),
                 ),
               ),
-              SizedBox(width: 10.w),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Text(
                   title,
                   style: GoogleFonts.outfit(
-                    fontSize: 15.sp,
+                    fontSize: 17.sp,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.heading,
-                    letterSpacing: -0.3,
+                    color: _black,
+                    letterSpacing: -0.2,
                   ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 10.h),
+          SizedBox(height: 12.h),
           ...paragraphs.map((p) {
             final isBullet = p.startsWith("• ") || p.startsWith("- ");
             final isSubNumber =
@@ -378,17 +368,17 @@ class _TermsAndPrivacyScreenState extends State<TermsAndPrivacyScreen> {
                 RegExp(r"^[a-z]\.").hasMatch(p);
 
             return Padding(
-              padding: EdgeInsets.only(bottom: 8.h),
+              padding: EdgeInsets.only(bottom: 9.h),
               child: Text(
                 p,
                 textAlign: TextAlign.justify,
                 style: GoogleFonts.outfit(
-                  fontSize: 13.sp,
+                  fontSize: 15.sp,
                   fontWeight: (isBullet || isSubNumber)
-                      ? FontWeight.w400
+                      ? FontWeight.w500
                       : FontWeight.w400,
-                  color: const Color(0xFF2A2933),
-                  height: 1.45,
+                  color: _black,
+                  height: 1.55,
                   letterSpacing: -0.15,
                 ),
               ),
@@ -410,35 +400,33 @@ class _TermsAndPrivacyScreenState extends State<TermsAndPrivacyScreen> {
     return Container(
       width: double.infinity,
       margin: EdgeInsets.only(bottom: 14.h),
-      padding: EdgeInsets.all(14.w),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF7D6),
+        color: _bg,
         borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: const Color(0xFF101C16), width: 1.2.w),
+        border: Border.all(color: _gold, width: 1.8.w),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                Icons.headset_mic_rounded,
-                size: 22.sp,
-                color: const Color(0xFF101C16),
-              ),
-              SizedBox(width: 8.w),
+              Icon(Icons.headset_mic_rounded, size: 24.sp, color: _gold),
+              SizedBox(width: 10.w),
               Expanded(
                 child: Text(
                   title,
                   style: GoogleFonts.outfit(
-                    fontSize: 15.sp,
+                    fontSize: 17.5.sp,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF101C16),
+                    color: _black,
                   ),
                 ),
               ),
             ],
           ),
+          SizedBox(height: 10.h),
+          Divider(color: _gold.withValues(alpha: 0.35), height: 1.5.h),
           SizedBox(height: 10.h),
           _contactRow(Icons.phone_outlined, "Phone", phone),
           _contactRow(Icons.email_outlined, "Email", email),
@@ -457,27 +445,28 @@ class _TermsAndPrivacyScreenState extends State<TermsAndPrivacyScreen> {
 
   Widget _contactRow(IconData icon, String label, String value) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 6.h),
+      padding: EdgeInsets.only(bottom: 8.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16.sp, color: const Color(0xFF101C16)),
+          Icon(icon, size: 18.sp, color: _gold),
           SizedBox(width: 8.w),
           Text(
             "$label: ",
             style: GoogleFonts.outfit(
-              fontSize: 12.5.sp,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF101C16),
+              fontSize: 14.5.sp,
+              fontWeight: FontWeight.w700,
+              color: _black,
             ),
           ),
           Expanded(
             child: Text(
               value,
               style: GoogleFonts.outfit(
-                fontSize: 12.5.sp,
+                fontSize: 14.5.sp,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xFF2A2933),
+                color: _black,
+                height: 1.4,
               ),
             ),
           ),
