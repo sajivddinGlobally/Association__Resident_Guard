@@ -40,18 +40,14 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       builder: (context, child) {
         return AnnotatedRegion(
-          value: const SystemUiOverlayStyle(
-            // statusBarColor: Color(0xFFF3F3F3),
-            // statusBarIconBrightness: Brightness.dark,
-            // statusBarBrightness: Brightness.light,
-          ),
+          value: const SystemUiOverlayStyle(),
           child: SafeArea(
             top: false,
             child: MaterialApp(
               navigatorKey: navigatorKey,
               scaffoldMessengerKey: snackBarKey,
               debugShowCheckedModeBanner: false,
-              title: 'Property Care',
+              title: 'Stayo Community',
               theme: ThemeData(
                 colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
               ),
@@ -73,3 +69,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+
+// com.ascentpms.stayocommunity

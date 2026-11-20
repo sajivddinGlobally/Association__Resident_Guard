@@ -1,12 +1,14 @@
 import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:property_association_or_resident/AssociationScreen/Auth/AssociationLogin.dart';
 import 'package:property_association_or_resident/AssociationScreen/Auth/provider/getAssignedProvider.dart';
+import 'package:property_association_or_resident/AssociationScreen/Auth/terms_and_privacy_screen.dart';
 import 'package:property_association_or_resident/Core/AuthService/AuthServiceProvider.dart';
 import 'package:property_association_or_resident/Core/Constant/appColor.dart';
 import 'package:property_association_or_resident/Core/Utils/showMessage.dart';
@@ -525,7 +527,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   text: TextSpan(
                                     style: GoogleFonts.outfit(
                                       fontSize: 14.sp,
-                                      color: Color.fromRGBO(42, 41, 51, 0.7),
+                                      color: const Color.fromRGBO(42, 41, 51, 0.7),
                                       letterSpacing: -0.2,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -538,11 +540,46 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                           fontWeight: FontWeight.w700,
                                           color: const Color(0xFF2A2933),
                                           letterSpacing: -0.2,
+                                          decoration: TextDecoration.underline,
                                         ),
+                                        recognizer: TapGestureRecognizer()
+                                          ..onTap = () {
+                                            Navigator.push(
+                                              context,
+                                              CupertinoPageRoute(
+                                                builder: (context) =>
+                                                    const TermsAndPrivacyScreen(
+                                                  initialTab: 0,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                      ),
+                                      const TextSpan(text: " and "),
+                                      TextSpan(
+                                        text: "Privacy Policy",
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 14.sp,
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFF2A2933),
+                                          letterSpacing: -0.2,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                        recognizer: TapGestureRecognizer()
+                                          ..onTap = () {
+                                            Navigator.push(
+                                              context,
+                                              CupertinoPageRoute(
+                                                builder: (context) =>
+                                                    const TermsAndPrivacyScreen(
+                                                  initialTab: 1,
+                                                ),
+                                              ),
+                                            );
+                                          },
                                       ),
                                       const TextSpan(
-                                        text:
-                                            " and acknowledge the\nassociation management platform policies.",
+                                        text: " of STAYO platform.",
                                       ),
                                     ],
                                   ),
@@ -562,9 +599,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                       if (!_formKey.currentState!.validate()) {
                                         return;
                                       }
-                                      if (ownerAgreeTerms) {
+                                      if (!associationAgreeTerms) {
                                         showErrorSnackBar(
-                                          "Please agree to the terms and conditions",
+                                          "Please agree to the Terms & Conditions and Privacy Policy",
                                         );
                                         return;
                                       }
@@ -757,14 +794,60 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               SizedBox(width: 8.w),
 
                               Expanded(
-                                child: Text(
-                                  "I agree to the Terms & Conditions and Privacy Policy.",
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.outfit(
-                                    fontSize: 14.sp,
-                                    fontWeight: FontWeight.w500,
-                                    color: const Color(0xFF101C16),
+                                child: RichText(
+                                  text: TextSpan(
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w500,
+                                      color: const Color(0xFF101C16),
+                                      letterSpacing: -0.2,
+                                    ),
+                                    children: [
+                                      const TextSpan(text: "I agree to the "),
+                                      TextSpan(
+                                        text: "Terms & Conditions",
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 14.sp,
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFF101C16),
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                        recognizer: TapGestureRecognizer()
+                                          ..onTap = () {
+                                            Navigator.push(
+                                              context,
+                                              CupertinoPageRoute(
+                                                builder: (context) =>
+                                                    const TermsAndPrivacyScreen(
+                                                  initialTab: 0,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                      ),
+                                      const TextSpan(text: " and "),
+                                      TextSpan(
+                                        text: "Privacy Policy.",
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 14.sp,
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFF101C16),
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                        recognizer: TapGestureRecognizer()
+                                          ..onTap = () {
+                                            Navigator.push(
+                                              context,
+                                              CupertinoPageRoute(
+                                                builder: (context) =>
+                                                    const TermsAndPrivacyScreen(
+                                                  initialTab: 1,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -778,6 +861,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             height: 52.h,
                             child: ElevatedButton(
                               onPressed: () {
+                                if (!associationAgreeTerms) {
+                                  showErrorSnackBar(
+                                    "Please agree to the Terms & Conditions and Privacy Policy",
+                                  );
+                                  return;
+                                }
                                 Navigator.push(
                                   context,
                                   CupertinoPageRoute(

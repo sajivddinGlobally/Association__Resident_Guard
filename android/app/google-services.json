@@ -7,6 +7,44 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:1020638733342:android:d52300f4447817c753ba0f",
+        "android_client_info": {
+          "package_name": "com.ascentpms.care"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGYLgMiNHp-LSq6jfWGn3xVYxvn1fFhLQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1020638733342:android:4bc49205fd6b0bd553ba0f",
+        "android_client_info": {
+          "package_name": "com.ascentpms.stayocommunity"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGYLgMiNHp-LSq6jfWGn3xVYxvn1fFhLQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:1020638733342:android:406e4afd3b25ee8c53ba0f",
         "android_client_info": {
           "package_name": "com.example.property_association_or_resident"
