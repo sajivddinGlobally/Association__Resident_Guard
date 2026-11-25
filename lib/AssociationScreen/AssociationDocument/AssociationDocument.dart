@@ -183,7 +183,7 @@ class _AssociationDocumentState extends ConsumerState<AssociationDocument> {
                                   children: [
                                     Text(
                                       // "Association Documents",
-                                      documentCenter?.title ?? "N/A",
+                                      documentCenter?.title ?? "",
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: GoogleFonts.outfit(
@@ -197,13 +197,18 @@ class _AssociationDocumentState extends ConsumerState<AssociationDocument> {
                                     SizedBox(height: 3.h),
                                     Text(
                                       // "Important records & files in one place",
-                                      documentCenter?.subtitle ?? "N/A",
+                                      documentCenter?.subtitle ?? "",
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: GoogleFonts.outfit(
                                         fontSize: 14.sp,
                                         fontWeight: FontWeight.w500,
-                                        color: const Color.fromRGBO(0, 0, 0, 0.75),
+                                        color: const Color.fromRGBO(
+                                          0,
+                                          0,
+                                          0,
+                                          0.75,
+                                        ),
                                         letterSpacing: -0.2,
                                         height: 1.1,
                                       ),
@@ -268,11 +273,7 @@ class _AssociationDocumentState extends ConsumerState<AssociationDocument> {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.search,
-                      size: 24.sp,
-                      color: AppColors.heading,
-                    ),
+                    Icon(Icons.search, size: 24.sp, color: AppColors.heading),
                     SizedBox(width: 10.w),
                     Expanded(
                       child: TextField(

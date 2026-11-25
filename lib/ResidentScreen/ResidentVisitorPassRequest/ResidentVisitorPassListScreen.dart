@@ -506,9 +506,7 @@ class _ResidentVisitorPassListScreenState
                   ],
                 ),
               ),
-
               SizedBox(height: 16.h),
-
               // Filter Row
               state.when(
                 data: (data) {
@@ -517,7 +515,6 @@ class _ResidentVisitorPassListScreenState
                           data.data!.visitorPasses!.isNotEmpty)
                       ? data.data!.visitorPasses!
                       : (data.data?.recentRequests?.requests ?? <Request>[]);
-
                   final filteredList = allRequests.where((req) {
                     if (_selectedFilter == "ALL") return true;
                     final st = (req.status ?? "").toUpperCase();
@@ -749,11 +746,7 @@ class _ResidentVisitorPassListScreenState
     final bool isPending =
         statusUpper == "PENDING" ||
         statusUpper == "WAITING" ||
-        (!isApproved &&
-            !isCompleted &&
-            !isRejected &&
-            !isInside &&
-            !isExpired);
+        (!isApproved && !isCompleted && !isRejected && !isInside && !isExpired);
 
     // Status styling based on status
     final Color statusBg;

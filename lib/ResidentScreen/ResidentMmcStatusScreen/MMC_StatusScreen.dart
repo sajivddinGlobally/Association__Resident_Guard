@@ -7,10 +7,12 @@ import 'package:property_association_or_resident/Core/Constant/appColor.dart';
 import 'package:property_association_or_resident/Core/Utils/showMessage.dart';
 import 'package:property_association_or_resident/ResidentScreen/Model/ResidentMmcStatusResModel.dart';
 import 'package:property_association_or_resident/ResidentScreen/ResidentMmcStatusScreen/MaintenanceActivitiesScreen.dart';
+import 'package:property_association_or_resident/ResidentScreen/ResidentHomeScreen/provider/residentDashboardProvider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'Provider/ResidentMmcStatusProvider.dart';
+import 'MmcOnlinePaymentSheet.dart';
 
 class MmcStatusscreen extends ConsumerStatefulWidget {
   const MmcStatusscreen({super.key});
@@ -938,6 +940,9 @@ class _MmcStatusscreenState extends ConsumerState<MmcStatusscreen> {
     required PendingDuesSummary pendingSummary,
     required ResidentMmcStatusResModel data,
   }) {
+    final payOnline = data.data.actions.payOnline;
+    final canPayOnline = payOnline != null && payOnline.isAvailable;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1006,80 +1011,117 @@ class _MmcStatusscreenState extends ConsumerState<MmcStatusscreen> {
                   width: 1.w,
                 ),
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Container(
-                    width: 40.w,
-                    height: 40.w,
-                    decoration: BoxDecoration(
-                      color: badgeColor.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Icon(
-                      Icons.warning_amber_rounded,
-                      size: 20.sp,
-                      color: badgeColor,
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.month,
-                          style: GoogleFonts.outfit(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.heading,
-                          ),
-                        ),
-                        SizedBox(height: 2.h),
-                        Text(
-                          item.dueDate.isNotEmpty
-                              ? "Due: ${item.dueDate}"
-                              : "Overdue",
-                          style: GoogleFonts.outfit(
-                            fontSize: 13.sp,
-                            color: const Color(0xFFEF4444),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                  Row(
                     children: [
-                      Text(
-                        item.amountDisplay,
-                        style: GoogleFonts.outfit(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xffB8860B),
-                        ),
-                      ),
-                      SizedBox(height: 4.h),
                       Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 10.w,
-                          vertical: 2.h,
-                        ),
+                        width: 40.w,
+                        height: 40.w,
                         decoration: BoxDecoration(
                           color: badgeColor.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(20.r),
+                          borderRadius: BorderRadius.circular(8.r),
                         ),
-                        child: Text(
-                          item.status,
-                          style: GoogleFonts.outfit(
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w600,
-                            color: badgeColor,
+                        child: Icon(
+                          Icons.warning_amber_rounded,
+                          size: 20.sp,
+                          color: badgeColor,
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item.month,
+                              style: GoogleFonts.outfit(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.heading,
+                              ),
+                            ),
+                            SizedBox(height: 2.h),
+                            Text(
+                              item.dueDate.isNotEmpty
+                                  ? "Due: ${item.dueDate}"
+                                  : "Overdue",
+                              style: GoogleFonts.outfit(
+                                fontSize: 13.sp,
+                                color: const Color(0xFFEF4444),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            item.amountDisplay,
+                            style: GoogleFonts.outfit(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xffB8860B),
+                            ),
                           ),
-                        ),
+                          SizedBox(height: 4.h),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 10.w,
+                              vertical: 2.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: badgeColor.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(20.r),
+                            ),
+                            child: Text(
+                              item.status,
+                              style: GoogleFonts.outfit(
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w600,
+                                color: badgeColor,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
+                  // Naya: Online Pay (Razorpay) - sirf jab server pay_online bhejta hai
+                  if (canPayOnline && item.id > 0 && item.amount > 0) ...[
+                    SizedBox(height: 12.h),
+                    SizedBox(
+                      height: 42.h,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _openOnlinePayment(item, payOnline),
+                        icon: Icon(
+                          Icons.payment_rounded,
+                          size: 18.sp,
+                          color: Colors.white,
+                        ),
+                        label: Text(
+                          (payOnline?.label ?? "").isNotEmpty
+                              ? payOnline!.label
+                              : "Pay Now",
+                          style: GoogleFonts.outfit(
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF101C16),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             );
@@ -1087,6 +1129,18 @@ class _MmcStatusscreenState extends ConsumerState<MmcStatusscreen> {
         ),
       ],
     );
+  }
+
+  /// Online payment sheet kholo; band hone par MMC + Home dashboard data dobara lao
+  /// (server par bill, owner due, receipts sab update ho chuke hote hain)
+  Future<void> _openOnlinePayment(
+    PendingMonthItem item,
+    PayOnline? payOnline,
+  ) async {
+    await showMmcOnlinePaymentSheet(context, bill: item, config: payOnline);
+    if (!mounted) return;
+    ref.invalidate(residentMmcStatusProvider);
+    ref.invalidate(residentDashboardProvider);
   }
 
   // --- Main Action Buttons (Pay Maintenance & History) ---

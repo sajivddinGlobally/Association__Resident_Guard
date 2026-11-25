@@ -111,7 +111,6 @@ class _ResidentloginscreenState extends State<Residentloginscreen> {
                       textAlignVertical: TextAlignVertical.center,
                       decoration: InputDecoration(
                         isDense: true,
-
                         prefixIcon: Padding(
                           padding: EdgeInsets.only(left: 10.w),
                           child: Icon(

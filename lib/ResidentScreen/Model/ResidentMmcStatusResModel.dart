@@ -323,17 +323,56 @@ class MmcHistoryItem {
 class Actions {
   final PayNow viewHistory;
   final PayNow payNow;
+  // Naya: online payment (Razorpay). Purane server se ye nahi aata -> null (button nahi dikhega)
+  final PayOnline? payOnline;
 
-  Actions({required this.viewHistory, required this.payNow});
+  Actions({required this.viewHistory, required this.payNow, this.payOnline});
 
   factory Actions.fromJson(Map<String, dynamic> json) => Actions(
     viewHistory: PayNow.fromJson(json["view_history"] ?? {}),
     payNow: PayNow.fromJson(json["pay_now"] ?? {}),
+    payOnline: json["pay_online"] is Map
+        ? PayOnline.fromJson(Map<String, dynamic>.from(json["pay_online"]))
+        : null,
   );
 
   Map<String, dynamic> toJson() => {
     "view_history": viewHistory.toJson(),
     "pay_now": payNow.toJson(),
+    if (payOnline != null) "pay_online": payOnline!.toJson(),
+  };
+}
+
+/// MMC ka ONLINE payment (Razorpay) - server `actions.pay_online` bhejta hai
+class PayOnline {
+  final String label;
+  final bool isAvailable;
+  final bool allowPartial;
+  final num minAmount;
+  final String note;
+
+  PayOnline({
+    required this.label,
+    required this.isAvailable,
+    required this.allowPartial,
+    required this.minAmount,
+    required this.note,
+  });
+
+  factory PayOnline.fromJson(Map<String, dynamic> json) => PayOnline(
+    label: _parseString(json["label"], "Pay Now"),
+    isAvailable: _parseBool(json["is_available"]),
+    allowPartial: _parseBool(json["allow_partial"], true),
+    minAmount: _parseNum(json["min_amount"], 1),
+    note: _parseString(json["note"]),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "label": label,
+    "is_available": isAvailable,
+    "allow_partial": allowPartial,
+    "min_amount": minAmount,
+    "note": note,
   };
 }
 
