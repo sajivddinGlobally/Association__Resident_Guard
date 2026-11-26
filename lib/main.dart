@@ -1,3 +1,77 @@
+// import 'dart:developer';
+
+// import 'package:flutter/material.dart';
+// import 'package:flutter/services.dart';
+// import 'package:flutter_riverpod/flutter_riverpod.dart';
+// import 'package:flutter_screenutil/flutter_screenutil.dart';
+// import 'package:hive/hive.dart';
+// import 'package:hive_flutter/adapters.dart';
+// import 'package:property_association_or_resident/AssociationScreen/AssociationHome/AssociationHome.dart';
+// import 'package:property_association_or_resident/Core/Utils/key.dart';
+// import 'package:property_association_or_resident/GuardScreen/GuardHomeScreen/GuardHomeScreen.dart';
+// import 'package:property_association_or_resident/ResidentScreen/ResidentHomeScreen/ResidentHomeScreen.dart';
+// import 'package:property_association_or_resident/splash_screen.dart';
+
+// import 'Core/PushNotificationService/PushNotificationService.dart';
+
+// void main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+//   await Hive.initFlutter();
+//   await Hive.openBox("associationdata");
+//   // Push notification (popup) - fail ho to bhi app normal khulegi
+//   await PushNotificationService.init();
+//   runApp(ProviderScope(child: const MyApp()));
+// }
+
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
+
+//   // This widget is the root of your application.
+//   @override
+//   Widget build(BuildContext context) {
+//     var box = Hive.box("associationdata");
+//     var token = box.get("token");
+//     var role = box.get("role");
+//     log("Bearer Token :- ${token ?? "No Token Found"}");
+//     log("Saved Role :- ${role ?? "No Role Found"}");
+//     return ScreenUtilInit(
+//       designSize: Size(440, 855),
+//       minTextAdapt: true,
+//       splitScreenMode: true,
+//       builder: (context, child) {
+//         return AnnotatedRegion(
+//           value: const SystemUiOverlayStyle(),
+//           child: SafeArea(
+//             top: false,
+//             child: MaterialApp(
+//               navigatorKey: navigatorKey,
+//               scaffoldMessengerKey: snackBarKey,
+//               debugShowCheckedModeBanner: false,
+//               title: 'Stayo Community',
+//               theme: ThemeData(
+//                 colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+//               ),
+//               home: token == null
+//                   ? const SplashScreen()
+//                   : (role != null &&
+//                             role.toString().toLowerCase().contains("resident")
+//                         ? const ResidentBottomNavBar()
+//                         : (role != null &&
+//                                   role.toString().toLowerCase().contains(
+//                                     "security",
+//                                   )
+//                               ? GuardBottomNavState()
+//                               : const AssociationBottomNavBar())),
+//             ),
+//           ),
+//         );
+//       },
+//     );
+//   }
+// }
+
+// // com.ascentpms.stayocommunity
+
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -6,6 +80,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:property_association_or_resident/AssociationScreen/AssociationHome/AssociationHome.dart';
 import 'package:property_association_or_resident/Core/Utils/key.dart';
 import 'package:property_association_or_resident/GuardScreen/GuardHomeScreen/GuardHomeScreen.dart';
@@ -51,6 +126,31 @@ class MyApp extends StatelessWidget {
               theme: ThemeData(
                 colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
               ),
+              // Association screens par text ~12% bada (client: font bahut chhota tha).
+              // Phone ki apni font setting bhi maani jaati hai. Resident / Guard waise hi.
+              builder: (context, appChild) {
+                final page = appChild ?? const SizedBox.shrink();
+                return ValueListenableBuilder<Box<dynamic>>(
+                  valueListenable: Hive.box(
+                    "associationdata",
+                  ).listenable(keys: ["role"]),
+                  builder: (context, b, _) {
+                    final r = (b.get("role") ?? "").toString().toLowerCase();
+                    final isAssociation =
+                        r.isNotEmpty &&
+                        !r.contains("resident") &&
+                        !r.contains("security");
+                    if (!isAssociation) return page;
+                    final mq = MediaQuery.of(context);
+                    final base = mq.textScaler.scale(1.0);
+                    final scale = (base * 1.12).clamp(1.0, 1.6).toDouble();
+                    return MediaQuery(
+                      data: mq.copyWith(textScaler: TextScaler.linear(scale)),
+                      child: page,
+                    );
+                  },
+                );
+              },
               home: token == null
                   ? const SplashScreen()
                   : (role != null &&
@@ -69,6 +169,5 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
 
 // com.ascentpms.stayocommunity

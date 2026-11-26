@@ -9,7 +9,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:property_association_or_resident/Core/Constant/appColor.dart';
 import 'package:property_association_or_resident/Core/data/model/ResponseModel/ServiceManagementPerformanceResModel.dart';
 
-import 'Provider/serviceManagementPerformanceProvider.dart';
+import 'provider/serviceManagementPerformanceProvider.dart';
+import 'vendorMarks.dart';
 
 class ServiceManagePerformance extends ConsumerStatefulWidget {
   final String id;
@@ -306,16 +307,11 @@ class _ServiceManagePerformanceState
                       children: [
                         _performanceMetric(
                           title: "Service Quality",
-                          percentage:
-                              int.tryParse(
-                                data
-                                    .data
-                                    .performanceMetrics
-                                    .serviceQuality
-                                    .score
-                                    .replaceAll('%', ''),
-                              ) ??
-                              0,
+                          percentage: _pctFromScore(
+                            data.data.performanceMetrics.serviceQuality.score,
+                          ),
+                          scoreText:
+                              data.data.performanceMetrics.serviceQuality.score,
                           description:
                               data.data.performanceMetrics.serviceQuality.label,
                           status: data
@@ -328,16 +324,11 @@ class _ServiceManagePerformanceState
                         SizedBox(height: 16.h),
                         _performanceMetric(
                           title: "Completion Rate",
-                          percentage:
-                              int.tryParse(
-                                data
-                                    .data
-                                    .performanceMetrics
-                                    .completionRate
-                                    .score
-                                    .replaceAll('%', ''),
-                              ) ??
-                              0,
+                          percentage: _pctFromScore(
+                            data.data.performanceMetrics.completionRate.score,
+                          ),
+                          scoreText:
+                              data.data.performanceMetrics.completionRate.score,
                           description:
                               data.data.performanceMetrics.completionRate.label,
                           status: data
@@ -350,16 +341,18 @@ class _ServiceManagePerformanceState
                         SizedBox(height: 16.h),
                         _performanceMetric(
                           title: "Response Performance",
-                          percentage:
-                              int.tryParse(
-                                data
-                                    .data
-                                    .performanceMetrics
-                                    .responsePerformance
-                                    .score
-                                    .replaceAll('%', ''),
-                              ) ??
-                              0,
+                          percentage: _pctFromScore(
+                            data
+                                .data
+                                .performanceMetrics
+                                .responsePerformance
+                                .score,
+                          ),
+                          scoreText: data
+                              .data
+                              .performanceMetrics
+                              .responsePerformance
+                              .score,
                           description: data
                               .data
                               .performanceMetrics
@@ -375,16 +368,14 @@ class _ServiceManagePerformanceState
                         SizedBox(height: 16.h),
                         _performanceMetric(
                           title: "Issue Resolution",
-                          percentage:
-                              int.tryParse(
-                                data
-                                    .data
-                                    .performanceMetrics
-                                    .issueResolution
-                                    .score
-                                    .replaceAll('%', ''),
-                              ) ??
-                              0,
+                          percentage: _pctFromScore(
+                            data.data.performanceMetrics.issueResolution.score,
+                          ),
+                          scoreText: data
+                              .data
+                              .performanceMetrics
+                              .issueResolution
+                              .score,
                           description: data
                               .data
                               .performanceMetrics
@@ -398,6 +389,49 @@ class _ServiceManagePerformanceState
                           progressColor: const Color(0xFF087B9F),
                         ),
                       ],
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48.h,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final ok = await showVendorMarksSheet(
+                          context,
+                          ref,
+                          vendorId: int.tryParse(widget.id),
+                          title: data.data.performanceOverview.subtitle
+                              .split(' - ')
+                              .first,
+                          initial: _initialMarks(data.data.performanceMetrics),
+                        );
+                        if (ok) {
+                          ref.invalidate(
+                            serviceManagementPerformanceProvider(widget.id),
+                          );
+                        }
+                      },
+                      icon: Icon(
+                        Icons.edit_note_rounded,
+                        color: Colors.white,
+                        size: 22.sp,
+                      ),
+                      label: Text(
+                        "Give / Edit Performance Marks",
+                        style: GoogleFonts.outfit(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFB8860B),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        elevation: 0,
+                      ),
                     ),
                   ),
                   SizedBox(height: 20.h),
@@ -625,9 +659,48 @@ class _ServiceManagePerformanceState
     );
   }
 
+  /// Abhi ke marks (sheet mein pehle se bhare hue)
+  Map<String, double> _initialMarks(PerformanceMetrics m) {
+    final out = <String, double>{};
+    void put(String key, String score) {
+      final v = _marksOf(score);
+      if (v != null) out[key] = v;
+    }
+
+    put("quality", m.serviceQuality.score);
+    put("completion", m.completionRate.score);
+    put("response", m.responsePerformance.score);
+    put("resolution", m.issueResolution.score);
+    return out;
+  }
+
+  /// "28.5/30" -> 28.5 (marks sheet ke liye); "-" -> null
+  double? _marksOf(String score) {
+    final parts = score.split('/');
+    return parts.length == 2 ? double.tryParse(parts[0].trim()) : null;
+  }
+
+  /// "28.5/30" -> 95, "80%" / "80" -> 80, "-" -> 0
+  /// (pehle "28.5/30" parse nahi hota tha aur har bar 0% dikhti thi)
+  int _pctFromScore(String score) {
+    final s = score.trim();
+    final parts = s.split('/');
+    if (parts.length == 2) {
+      final a = double.tryParse(parts[0].trim());
+      final b = double.tryParse(parts[1].trim());
+      if (a != null && b != null && b > 0) {
+        return (a / b * 100).round().clamp(0, 100);
+      }
+      return 0;
+    }
+    final v = double.tryParse(s.replaceAll('%', '').trim());
+    return v == null ? 0 : v.round().clamp(0, 100);
+  }
+
   Widget _performanceMetric({
     required String title,
     required int percentage,
+    String? scoreText,
     required String description,
     required String status,
     required Color progressColor,
@@ -652,7 +725,9 @@ class _ServiceManagePerformanceState
               ),
             ),
             Text(
-              "$percentage%",
+              (scoreText != null && scoreText.contains('/'))
+                  ? scoreText
+                  : (scoreText == '-' ? '-' : "$percentage%"),
               style: GoogleFonts.outfit(
                 fontSize: 15.sp,
                 fontWeight: FontWeight.w700,

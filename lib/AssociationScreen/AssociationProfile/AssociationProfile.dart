@@ -859,6 +859,8 @@ import 'package:svg_flutter/svg.dart';
 import '../../Core/AuthService/AuthServiceProvider.dart';
 import '../../Core/Utils/showMessage.dart';
 import '../AssociationCalender/AssociationCalender.dart';
+import '../InventoryRequestsScreen/InventoryRequestsScreen.dart';
+import '../SocietyReportsAnalyticsScreen/SocietyReportsAnalyticsScreen.dart';
 import 'AssociationCaretakersScreen.dart';
 
 class AssociationProfile extends ConsumerStatefulWidget {
@@ -1223,6 +1225,37 @@ class _AssociationProfileState extends ConsumerState<AssociationProfile> {
                               context,
                               CupertinoPageRoute(
                                 builder: (context) => InspectionReportScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        Divider(color: Color.fromRGBO(42, 41, 51, 0.6)),
+                        _accountSettingTab(
+                          image: "assets/SvgImage/audit.svg",
+                          name: "Reports & Analytics",
+                          title:
+                              "Society report (PDF): health score, dues, vendors",
+                          callback: () {
+                            Navigator.push(
+                              context,
+                              CupertinoPageRoute(
+                                builder: (context) =>
+                                    const SocietyReportsAnalyticsScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        Divider(color: Color.fromRGBO(42, 41, 51, 0.6)),
+                        _accountSettingTab(
+                          image: "assets/SvgImage/audit.svg",
+                          name: "Inventory Requests",
+                          title: "Items requested by guards & caretakers",
+                          callback: () {
+                            Navigator.push(
+                              context,
+                              CupertinoPageRoute(
+                                builder: (context) =>
+                                    const InventoryRequestsScreen(),
                               ),
                             );
                           },

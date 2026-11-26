@@ -10,6 +10,7 @@ import 'package:property_association_or_resident/Core/Constant/appColor.dart';
 import 'package:property_association_or_resident/Core/data/model/ResponseModel/ServiceManagementResModel.dart';
 
 import 'provider/getServiceManagementProvider.dart';
+import 'vendorMarks.dart';
 
 class AssociationServiceManagement extends ConsumerStatefulWidget {
   const AssociationServiceManagement({super.key});
@@ -118,6 +119,33 @@ class _AssociationServiceManagementState
             ],
           ),
         ),
+        actions: [
+          // Vendor Performance Marks (Association deti hai, weightage fixed 30/30/20/20)
+          Padding(
+            padding: EdgeInsets.only(right: 16.w),
+            child: TextButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const VendorMarksScreen()),
+                );
+              },
+              icon: Icon(
+                Icons.star_rate_rounded,
+                color: const Color(0xFFB8860B),
+                size: 20.sp,
+              ),
+              label: Text(
+                "Marks",
+                style: GoogleFonts.outfit(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFFB8860B),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(

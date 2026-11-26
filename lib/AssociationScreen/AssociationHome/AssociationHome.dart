@@ -4806,13 +4806,14 @@ import 'package:property_association_or_resident/AssociationScreen/AssociationPr
 import 'package:property_association_or_resident/AssociationScreen/AssociationProperty/AssociationProperty.dart';
 import 'package:property_association_or_resident/AssociationScreen/AssociationVisitorLog/AssociationVisitorLogScreen.dart';
 import 'package:property_association_or_resident/AssociationScreen/AssociationServiceMagagement/AssociationServiceManagement.dart';
+import 'package:property_association_or_resident/AssociationScreen/AssociationAuditReport/inspectionReportScreen.dart';
 import 'package:property_association_or_resident/AssociationScreen/AssociationServiceRequest/ServiiceRequest.dart';
 import 'package:property_association_or_resident/AssociationScreen/AssociatoinComplaint/Complaint.dart';
 import 'package:property_association_or_resident/AssociationScreen/MantenanceCharges/DefaulterList.dart';
 import 'package:property_association_or_resident/AssociationScreen/MantenanceCharges/MantenanceCharges.dart';
 import 'package:property_association_or_resident/Core/Constant/appColor.dart';
 import 'package:svg_flutter/svg_flutter.dart';
-
+import '../AssociationServiceMagagement/vendorMarks.dart';
 import '../MantenanceCharges/MantenanceChargeStatus.dart';
 import 'Provider/commiteDashboardProvider.dart';
 import '../../Core/data/model/ResponseModel/commiteDashboardModel.dart';
@@ -5902,6 +5903,11 @@ class _AssociationHomeState extends ConsumerState<AssociationHome> {
 
                   SizedBox(height: 12.h),
 
+                  // Vendors ki Service Performance (Association ke marks se)
+                  _buildVendorPerformanceCard(),
+
+                  SizedBox(height: 12.h),
+
                   _buildMaintenanceCharges(
                     maintenanceCharges,
                     complex,
@@ -6413,6 +6419,216 @@ class _AssociationHomeState extends ConsumerState<AssociationHome> {
     return "${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}";
   }
 
+  /// Service Performance (vendors): Association ke diye marks ka average.
+  /// Tap -> Service Management (vendors list); "Give Marks" -> marks screen.
+  Widget _buildVendorPerformanceCard() {
+    final marksState = ref.watch(vendorMarksProvider);
+    final data = marksState.asData?.value;
+    final summary = data?["summary"] is Map ? data!["summary"] as Map : null;
+    final avg = double.tryParse("${summary?["average_score"]}");
+    final rated = int.tryParse("${summary?["rated_vendors"]}") ?? 0;
+    final total = int.tryParse("${summary?["total_vendors"]}") ?? 0;
+    final vendors =
+        (data?["vendors"] is List ? data!["vendors"] as List : [])
+            .whereType<Map>()
+            .where(
+              (v) =>
+                  v["performance"] is Map &&
+                  v["performance"]["is_rated"] == true,
+            )
+            .toList()
+          ..sort((a, b) {
+            final x = double.tryParse("${a["performance"]["total"]}") ?? 0;
+            final y = double.tryParse("${b["performance"]["total"]}") ?? 0;
+            return y.compareTo(x);
+          });
+
+    final label = avg == null
+        ? "Not rated yet"
+        : avg >= 90
+        ? "Excellent"
+        : avg >= 75
+        ? "Good"
+        : avg >= 50
+        ? "Average"
+        : "Needs Attention";
+    final color = avg == null
+        ? Colors.black45
+        : avg >= 75
+        ? const Color(0xFF16A34A)
+        : avg >= 50
+        ? const Color(0xFFE08A00)
+        : const Color(0xFFD93025);
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 18.w),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          Navigator.push(
+            context,
+            CupertinoPageRoute(
+              builder: (context) => const AssociationServiceManagement(),
+            ),
+          ).then((value) {
+            ref.invalidate(vendorMarksProvider);
+            ref.invalidate(commiteDashboardProvider);
+          });
+        },
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(14.w),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15.r),
+            border: Border.all(color: const Color(0xffE8E5DC), width: 1.w),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.engineering_outlined,
+                    size: 22.sp,
+                    color: const Color(0xFFB8860B),
+                  ),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: Text(
+                      "Service Performance",
+                      style: GoogleFonts.outfit(
+                        fontSize: 17.sp,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.heading,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                  ),
+                  if (marksState.isLoading)
+                    SizedBox(
+                      width: 16.w,
+                      height: 16.w,
+                      child: const CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  else
+                    Text(
+                      avg == null ? "-" : "${fmtMarks(avg)}/100",
+                      style: GoogleFonts.outfit(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700,
+                        color: color,
+                      ),
+                    ),
+                ],
+              ),
+              SizedBox(height: 8.h),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10.r),
+                child: LinearProgressIndicator(
+                  value: ((avg ?? 0) / 100).clamp(0.0, 1.0),
+                  minHeight: 7.h,
+                  backgroundColor: const Color(0xffE8E4D8),
+                  valueColor: AlwaysStoppedAnimation<Color>(color),
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                total == 0
+                    ? "No vendors added yet. Tap to view Service Management."
+                    : "$label  •  $rated of $total vendor(s) rated by the association",
+                style: GoogleFonts.outfit(
+                  fontSize: 14.sp,
+                  color: const Color(0xff0D241B),
+                  letterSpacing: -0.2,
+                ),
+              ),
+              if (vendors.isNotEmpty) ...[
+                SizedBox(height: 10.h),
+                ...vendors.take(3).map((v) {
+                  final t = double.tryParse("${v["performance"]["total"]}");
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: 6.h),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "${v["vendor_name"] ?? "Vendor"}",
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.outfit(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.heading,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          "${fmtMarks(t)}/100",
+                          style: GoogleFonts.outfit(
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.heading,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ],
+              SizedBox(height: 6.h),
+              Row(
+                children: [
+                  Text(
+                    "View vendors",
+                    style: GoogleFonts.outfit(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF9B7627),
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 18.sp,
+                    color: const Color(0xFF9B7627),
+                  ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        CupertinoPageRoute(
+                          builder: (context) => const VendorMarksScreen(),
+                        ),
+                      ).then((value) => ref.invalidate(vendorMarksProvider));
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 6.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFB8860B),
+                        borderRadius: BorderRadius.circular(6.r),
+                      ),
+                      child: Text(
+                        "Give Marks",
+                        style: GoogleFonts.outfit(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildServicePerformance(
     ServicePerformance? servicePerf,
     DataLatestInspection? latestInspection,
@@ -6507,11 +6723,12 @@ class _AssociationHomeState extends ConsumerState<AssociationHome> {
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () {
+                  // Health Score inspection checklist se banta hai -> Inspection report
+                  // (pehle galti se Service Management / vendors khul jaata tha)
                   Navigator.push(
                     context,
                     CupertinoPageRoute(
-                      builder: (context) =>
-                          const AssociationServiceManagement(),
+                      builder: (context) => const InspectionReportScreen(),
                     ),
                   ).then((value) {
                     ref.invalidate(commiteDashboardProvider);
@@ -7037,6 +7254,7 @@ class _AssociationHomeState extends ConsumerState<AssociationHome> {
         padding: EdgeInsets.symmetric(horizontal: 18.w),
         child: _sectionContainer(
           title: "Important Alerts",
+          highlight: true,
           action: "View All",
           onTap: () {
             Navigator.push(
@@ -7048,119 +7266,117 @@ class _AssociationHomeState extends ConsumerState<AssociationHome> {
           },
           child: Padding(
             padding: EdgeInsets.only(top: 5.h),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: alerts.map((alert) {
-                  IconData icon;
-                  Color color;
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: alerts.map((alert) {
+                IconData icon;
+                Color color;
 
-                  if (alert.severity == "danger" || alert.severity == "error") {
-                    color = const Color(0xffD94A42);
-                  } else {
-                    color = const Color(0xffD5A52C);
-                  }
+                if (alert.severity == "danger" || alert.severity == "error") {
+                  color = const Color(0xffD94A42);
+                } else {
+                  color = const Color(0xffD5A52C);
+                }
 
-                  final type = (alert.type ?? "").toLowerCase();
-                  final titleLower = (alert.title ?? "").toLowerCase();
-                  final actionRoute = (alert.actionRoute ?? "").toLowerCase();
+                final type = (alert.type ?? "").toLowerCase();
+                final titleLower = (alert.title ?? "").toLowerCase();
+                final actionRoute = (alert.actionRoute ?? "").toLowerCase();
 
-                  if (type.contains("complaint") ||
-                      titleLower.contains("complaint")) {
-                    icon = Icons.report_problem_outlined;
-                    color = const Color(0xffD94A42);
-                  } else if (type.contains("maintenance") ||
-                      titleLower.contains("maintenance")) {
-                    icon = Icons.build_outlined;
-                  } else if (type.contains("charge") ||
-                      type.contains("defaulter") ||
-                      titleLower.contains("charge") ||
-                      titleLower.contains("outstanding") ||
-                      titleLower.contains("unit")) {
-                    icon = Icons.currency_rupee;
-                  } else {
-                    icon = Icons.info_outline;
-                  }
+                if (type.contains("complaint") ||
+                    titleLower.contains("complaint")) {
+                  icon = Icons.report_problem_outlined;
+                  color = const Color(0xffD94A42);
+                } else if (type.contains("maintenance") ||
+                    titleLower.contains("maintenance")) {
+                  icon = Icons.build_outlined;
+                } else if (type.contains("charge") ||
+                    type.contains("defaulter") ||
+                    titleLower.contains("charge") ||
+                    titleLower.contains("outstanding") ||
+                    titleLower.contains("unit")) {
+                  icon = Icons.currency_rupee;
+                } else {
+                  icon = Icons.info_outline;
+                }
 
-                  String displayCount = alert.count != null
-                      ? "${alert.count}"
-                      : "";
-                  String displayTitle = alert.title ?? "";
-                  if (displayCount.isNotEmpty &&
-                      displayTitle.startsWith("$displayCount ")) {
-                    displayTitle = displayTitle.substring(
-                      displayCount.length + 1,
-                    );
-                  }
-
-                  VoidCallback onAlertTap;
-                  if (type.contains("complaint") ||
-                      actionRoute.contains("complaint") ||
-                      titleLower.contains("complaint")) {
-                    onAlertTap = () {
-                      Navigator.push(
-                        context,
-                        CupertinoPageRoute(
-                          builder: (context) => const Complaint(),
-                        ),
-                      ).then((value) {
-                        ref.invalidate(commiteDashboardProvider);
-                      });
-                    };
-                  } else if (type.contains("service_request") ||
-                      actionRoute.contains("service-request") ||
-                      type.contains("maintenance") ||
-                      actionRoute.contains("maintenance") ||
-                      titleLower.contains("maintenance")) {
-                    // Service Charges band -> Service Requests
-                    onAlertTap = _openServiceRequests;
-                  } else if (type.contains("charge") ||
-                      type.contains("defaulter") ||
-                      actionRoute.contains("charge") ||
-                      actionRoute.contains("defaulter") ||
-                      titleLower.contains("charge") ||
-                      titleLower.contains("outstanding") ||
-                      titleLower.contains("payment") ||
-                      titleLower.contains("unit")) {
-                    onAlertTap = () {
-                      Navigator.push(
-                        context,
-                        CupertinoPageRoute(
-                          builder: (context) => const DefaulterList(),
-                        ),
-                      ).then((value) {
-                        ref.invalidate(commiteDashboardProvider);
-                      });
-                    };
-                  } else {
-                    onAlertTap = () {
-                      Navigator.push(
-                        context,
-                        CupertinoPageRoute(
-                          builder: (context) => const Importantalertsscreen(),
-                        ),
-                      ).then((value) {
-                        ref.invalidate(commiteDashboardProvider);
-                      });
-                    };
-                  }
-
-                  return Padding(
-                    padding: EdgeInsets.only(right: 8.w),
-                    child: SizedBox(
-                      width: 200.w,
-                      child: _alertItem(
-                        icon: icon,
-                        count: displayCount,
-                        title: displayTitle,
-                        description: alert.subtitle ?? "",
-                        color: color,
-                        onTap: onAlertTap,
-                      ),
-                    ),
+                String displayCount = alert.count != null
+                    ? "${alert.count}"
+                    : "";
+                String displayTitle = alert.title ?? "";
+                if (displayCount.isNotEmpty &&
+                    displayTitle.startsWith("$displayCount ")) {
+                  displayTitle = displayTitle.substring(
+                    displayCount.length + 1,
                   );
-                }).toList(),
-              ),
+                }
+
+                VoidCallback onAlertTap;
+                if (type.contains("complaint") ||
+                    actionRoute.contains("complaint") ||
+                    titleLower.contains("complaint")) {
+                  onAlertTap = () {
+                    Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                        builder: (context) => const Complaint(),
+                      ),
+                    ).then((value) {
+                      ref.invalidate(commiteDashboardProvider);
+                    });
+                  };
+                } else if (type.contains("service_request") ||
+                    actionRoute.contains("service-request") ||
+                    type.contains("maintenance") ||
+                    actionRoute.contains("maintenance") ||
+                    titleLower.contains("maintenance")) {
+                  // Service Charges band -> Service Requests
+                  onAlertTap = _openServiceRequests;
+                } else if (type.contains("charge") ||
+                    type.contains("defaulter") ||
+                    actionRoute.contains("charge") ||
+                    actionRoute.contains("defaulter") ||
+                    titleLower.contains("charge") ||
+                    titleLower.contains("outstanding") ||
+                    titleLower.contains("payment") ||
+                    titleLower.contains("unit")) {
+                  onAlertTap = () {
+                    Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                        builder: (context) => const DefaulterList(),
+                      ),
+                    ).then((value) {
+                      ref.invalidate(commiteDashboardProvider);
+                    });
+                  };
+                } else {
+                  onAlertTap = () {
+                    Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                        builder: (context) => const Importantalertsscreen(),
+                      ),
+                    ).then((value) {
+                      ref.invalidate(commiteDashboardProvider);
+                    });
+                  };
+                }
+
+                return Padding(
+                  padding: EdgeInsets.only(bottom: 10.h),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: _alertItem(
+                      icon: icon,
+                      count: displayCount,
+                      title: displayTitle,
+                      description: alert.subtitle ?? "",
+                      color: color,
+                      onTap: onAlertTap,
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
           ),
         ),
@@ -7176,6 +7392,7 @@ class _AssociationHomeState extends ConsumerState<AssociationHome> {
       padding: EdgeInsets.symmetric(horizontal: 18.w),
       child: _sectionContainer(
         title: "Important Alerts",
+        highlight: true,
         action: "View All",
         onTap: () {
           Navigator.push(
@@ -7189,67 +7406,65 @@ class _AssociationHomeState extends ConsumerState<AssociationHome> {
         },
         child: Padding(
           padding: EdgeInsets.only(top: 5.h),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 200.w,
-                  child: _alertItem(
-                    icon: Icons.report_problem_outlined,
-                    count: "$openComplaints",
-                    title: "complaints require attention",
-                    description: "Review and take necessary action",
-                    color: const Color(0xffD94A42),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        CupertinoPageRoute(
-                          builder: (context) => const Complaint(),
-                        ),
-                      ).then((value) {
-                        ref.invalidate(commiteDashboardProvider);
-                      });
-                    },
-                  ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: _alertItem(
+                  icon: Icons.report_problem_outlined,
+                  count: "$openComplaints",
+                  title: "complaints require attention",
+                  description: "Review and take necessary action",
+                  color: const Color(0xffD94A42),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                        builder: (context) => const Complaint(),
+                      ),
+                    ).then((value) {
+                      ref.invalidate(commiteDashboardProvider);
+                    });
+                  },
                 ),
-                SizedBox(width: 8.w),
-                SizedBox(
-                  width: 200.w,
-                  child: _alertItem(
-                    icon: Icons.build_outlined,
-                    count: "$pendingMaintenance",
-                    title: "service requests open",
-                    description: "Assign vendors and track the work",
-                    color: const Color(0xffD5A52C),
-                    onTap: _openServiceRequests,
-                  ),
+              ),
+              SizedBox(height: 10.h),
+              SizedBox(
+                width: double.infinity,
+                child: _alertItem(
+                  icon: Icons.build_outlined,
+                  count: "$pendingMaintenance",
+                  title: "service requests open",
+                  description: "Assign vendors and track the work",
+                  color: const Color(0xffD5A52C),
+                  onTap: _openServiceRequests,
                 ),
-                SizedBox(width: 8.w),
-                SizedBox(
-                  width: 200.w,
-                  child: _alertItem(
-                    icon: Icons.currency_rupee,
-                    count: "$defaultersCount",
-                    title: "units have outstanding charges",
-                    description: totalOutstanding > 0
-                        ? "Total: ₹$totalOutstanding"
-                        : "Follow up for payment collection",
-                    color: const Color(0xffD5A52C),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        CupertinoPageRoute(
-                          builder: (context) => const DefaulterList(),
-                        ),
-                      ).then((value) {
-                        ref.invalidate(commiteDashboardProvider);
-                      });
-                    },
-                  ),
+              ),
+              SizedBox(height: 10.h),
+              SizedBox(
+                width: double.infinity,
+                child: _alertItem(
+                  icon: Icons.currency_rupee,
+                  count: "$defaultersCount",
+                  title: "units have outstanding charges",
+                  description: totalOutstanding > 0
+                      ? "Total: ₹$totalOutstanding"
+                      : "Follow up for payment collection",
+                  color: const Color(0xffD5A52C),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                        builder: (context) => const DefaulterList(),
+                      ),
+                    ).then((value) {
+                      ref.invalidate(commiteDashboardProvider);
+                    });
+                  },
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -7264,85 +7479,105 @@ class _AssociationHomeState extends ConsumerState<AssociationHome> {
     required Color color,
     VoidCallback? onTap,
   }) {
+    // Important alert: rangeen card, bada count aur bada text (pehle 12sp - dikhta nahi tha)
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
-        padding: EdgeInsets.all(10.w),
         decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(15.r),
-          border: Border.all(color: const Color(0xffE8E5DC), width: 1.w),
+          color: color.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: color.withOpacity(0.45), width: 1.2),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12.r),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(
-                  width: 32.w,
-                  height: 32.w,
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(7.r),
-                  ),
-                  child: Center(
-                    child: Icon(icon, size: 17.sp, color: color),
-                  ),
-                ),
-                SizedBox(width: 7.w),
+                Container(width: 5.w, color: color),
                 Expanded(
-                  child: Text.rich(
-                    TextSpan(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 12.h,
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        if (count.isNotEmpty)
-                          TextSpan(
-                            text: "$count ",
-                            style: GoogleFonts.outfit(
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xff0D241B),
-                            ),
+                        Container(
+                          width: 44.w,
+                          height: 44.w,
+                          decoration: BoxDecoration(
+                            color: color.withOpacity(0.16),
+                            borderRadius: BorderRadius.circular(10.r),
                           ),
-                        TextSpan(
-                          text: title,
-                          style: GoogleFonts.outfit(
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xff0D241B),
+                          child: Center(
+                            child: Icon(icon, size: 24.sp, color: color),
                           ),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text.rich(
+                                TextSpan(
+                                  children: [
+                                    if (count.isNotEmpty)
+                                      TextSpan(
+                                        text: "$count ",
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 22.sp,
+                                          fontWeight: FontWeight.w800,
+                                          color: color,
+                                          height: 1.1,
+                                        ),
+                                      ),
+                                    TextSpan(
+                                      text: title,
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xff0D241B),
+                                        height: 1.2,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (description.isNotEmpty) ...[
+                                SizedBox(height: 4.h),
+                                Text(
+                                  description,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 14.sp,
+                                    color: const Color(0xff4A4A4A),
+                                    height: 1.25,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: 6.w),
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          size: 16.sp,
+                          color: color,
                         ),
                       ],
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                SizedBox(width: 4.w),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 13.sp,
-                  color: const Color(0xff0D241B),
                 ),
               ],
             ),
-
-            SizedBox(height: 10.h),
-            Padding(
-              padding: EdgeInsets.only(left: 4.w),
-              child: Text(
-                description,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.outfit(
-                  fontSize: 12.sp,
-                  color: const Color(0xff777777),
-                  letterSpacing: -0.2,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -7353,29 +7588,40 @@ class _AssociationHomeState extends ConsumerState<AssociationHome> {
     required String action,
     required Widget child,
     required VoidCallback onTap,
+    bool highlight = false,
   }) {
+    const alertRed = Color(0xffD94A42);
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(9.w),
+      padding: EdgeInsets.all(highlight ? 12.w : 9.w),
       decoration: BoxDecoration(
-        color: Colors.transparent,
+        color: highlight ? alertRed.withOpacity(0.05) : Colors.transparent,
         borderRadius: BorderRadius.circular(15.r),
-        border: Border.all(color: const Color(0xffE8E5DC), width: 1.w),
+        border: Border.all(
+          color: highlight
+              ? alertRed.withOpacity(0.55)
+              : const Color(0xffE8E5DC),
+          width: highlight ? 1.5 : 1.w,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
+              if (highlight) ...[
+                Icon(Icons.warning_amber_rounded, color: alertRed, size: 24.sp),
+                SizedBox(width: 6.w),
+              ],
               Expanded(
                 child: Text(
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.outfit(
-                    fontSize: 16.sp,
+                    fontSize: highlight ? 19.sp : 16.sp,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.heading,
+                    color: highlight ? alertRed : AppColors.heading,
                     letterSpacing: -0.2,
                   ),
                 ),
@@ -7389,7 +7635,7 @@ class _AssociationHomeState extends ConsumerState<AssociationHome> {
                     Text(
                       action,
                       style: GoogleFonts.outfit(
-                        fontSize: 12.sp,
+                        fontSize: 14.sp,
                         fontWeight: FontWeight.w500,
                         color: const Color(0xFF9B7627),
                         letterSpacing: -0.2,
@@ -7406,7 +7652,7 @@ class _AssociationHomeState extends ConsumerState<AssociationHome> {
               ),
             ],
           ),
-          SizedBox(height: 7.h),
+          SizedBox(height: highlight ? 10.h : 7.h),
           child,
         ],
       ),

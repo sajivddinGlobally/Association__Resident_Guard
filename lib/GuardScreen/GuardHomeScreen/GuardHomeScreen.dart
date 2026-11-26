@@ -794,8 +794,9 @@ class _GuardhomescreenState extends ConsumerState<Guardhomescreen> {
                           // Society store: saamaan kitna hai (sirf dekhna) + kam ho to Association ko request
                           _infoCard(
                             icon: Icons.store_mall_directory_outlined,
-                            title: "Inventory",
-                            subtitle: "Check store stock & alert association",
+                            title: "Inventory & Requests",
+                            subtitle:
+                                "Request items from association · check stock",
                             onTap: () {
                               Navigator.push(
                                 context,

@@ -227,6 +227,50 @@ class _ResidentAnnouncementScreenState
                   // SizedBox(height: 18.h),
 
                   // Announcement List
+                  if (list.isNotEmpty) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(14.w),
+                      margin: EdgeInsets.only(bottom: 14.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF101C16),
+                        borderRadius: BorderRadius.circular(14.r),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.campaign_rounded,
+                            color: const Color(0xFFE8B900),
+                            size: 30.sp,
+                          ),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "${list.length} notice${list.length == 1 ? "" : "s"} from your association",
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 17.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                SizedBox(height: 2.h),
+                                Text(
+                                  "Latest first. Tap a notice to read it fully.",
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 13.sp,
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   if (list.isEmpty)
                     Container(
                       width: double.infinity,
@@ -261,7 +305,7 @@ class _ResidentAnnouncementScreenState
                           ),
                           SizedBox(height: 4.h),
                           Text(
-                            "There are no active notices for this category.",
+                            "Your association has not posted any notice yet. New notices will also appear in Notifications.",
                             style: GoogleFonts.outfit(
                               fontSize: 13.sp,
                               color: const Color(0xFF6F7672),
@@ -343,20 +387,96 @@ class _ResidentAnnouncementScreenState
     );
   }
 
+  /// Type ke hisaab se rang + icon
+  ({Color color, IconData icon, String label}) _typeStyle(String? type) {
+    switch ((type ?? "").toLowerCase()) {
+      case "maintenance":
+        return (
+          color: const Color(0xFFE08A00),
+          icon: Icons.build_circle_outlined,
+          label: "Maintenance",
+        );
+      case "emergency":
+        return (
+          color: const Color(0xFFD93025),
+          icon: Icons.warning_amber_rounded,
+          label: "Emergency",
+        );
+      case "meeting":
+        return (
+          color: const Color(0xFF1C64F2),
+          icon: Icons.groups_outlined,
+          label: "Meeting",
+        );
+      case "event":
+        return (
+          color: const Color(0xFF7C3AED),
+          icon: Icons.celebration_outlined,
+          label: "Event",
+        );
+      case "notice":
+        return (
+          color: const Color(0xFF0E7490),
+          icon: Icons.push_pin_outlined,
+          label: "Notice",
+        );
+      default:
+        return (
+          color: const Color(0xFFB8860B),
+          icon: Icons.campaign_outlined,
+          label: "Announcement",
+        );
+    }
+  }
+
+  Widget _chip(String text, Color color, {bool solid = false}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 3.h),
+      decoration: BoxDecoration(
+        color: solid ? color : color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: Text(
+        text,
+        style: GoogleFonts.outfit(
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w700,
+          color: solid ? Colors.white : color,
+          letterSpacing: 0.2,
+        ),
+      ),
+    );
+  }
+
   Widget _buildNoticeCard(ResidentAnnouncementItem item) {
-    final isAll = (item.targetAudience ?? "").toUpperCase() == "ALL";
+    final style = _typeStyle(item.type);
+    final priority = (item.priority ?? "normal").toLowerCase();
+    final isUrgent = priority == "urgent" || priority == "high";
+    final accent = isUrgent && (item.type ?? "").toLowerCase() != "emergency"
+        ? const Color(0xFFD93025)
+        : style.color;
+    final date = item.createdAtFormatted ?? item.dateHuman ?? "";
+    final by = item.createdBy?.name;
+    final hasAttachment = (item.attachmentUrl ?? "").toString().isNotEmpty;
 
     return Container(
       margin: EdgeInsets.only(bottom: 14.h),
       decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: const Color(0xFF101C16), width: 1.2),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: accent.withOpacity(0.35), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(10.r),
+          borderRadius: BorderRadius.circular(14.r),
           onTap: () {
             Navigator.push(
               context,
@@ -366,106 +486,145 @@ class _ResidentAnnouncementScreenState
               ),
             );
           },
-          child: Padding(
-            padding: EdgeInsets.all(14.r),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top Row: Audience Tag & Date
-                // Row(
-                //   children: [
-                //     Container(
-                //       padding: EdgeInsets.symmetric(
-                //         horizontal: 8.w,
-                //         vertical: 3.h,
-                //       ),
-                //       decoration: BoxDecoration(
-                //         color: const Color(0xFF101C16),
-                //         borderRadius: BorderRadius.circular(4.r),
-                //       ),
-                //       child: Row(
-                //         mainAxisSize: MainAxisSize.min,
-                //         children: [
-                //           Icon(
-                //             isAll ? Icons.groups_outlined : Icons.home_outlined,
-                //             size: 11.sp,
-                //             color: const Color(0xFFE8B900),
-                //           ),
-                //           SizedBox(width: 4.w),
-                //           Text(
-                //             isAll ? "All Society" : "Resident",
-                //             style: GoogleFonts.outfit(
-                //               fontSize: 11.sp,
-                //               fontWeight: FontWeight.w700,
-                //               color: Colors.white,
-                //             ),
-                //           ),
-                //         ],
-                //       ),
-                //     ),
-                //     const Spacer(),
-                //     Text(
-                //       item.postedDate,
-                //       style: GoogleFonts.outfit(
-                //         fontSize: 12.sp,
-                //         fontWeight: FontWeight.w500,
-                //         color: const Color(0xFF6F7672),
-                //       ),
-                //     ),
-                //   ],
-                // ),
-                // SizedBox(height: 10.h),
-
-                // Title
-                Text(
-                  item.title ?? "",
-                  style: GoogleFonts.outfit(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.heading,
-                    letterSpacing: -0.2,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Rangeen header: type + priority + date
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                decoration: BoxDecoration(
+                  color: accent.withOpacity(0.08),
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(14.r),
                   ),
                 ),
-
-                SizedBox(height: 6.h),
-
-                // Description
-                Text(
-                  item.message ?? "",
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.outfit(
-                    fontSize: 13.5.sp,
-                    fontWeight: FontWeight.w400,
-                    color: const Color.fromRGBO(42, 41, 51, 0.75),
-                    height: 1.35,
-                  ),
-                ),
-
-                SizedBox(height: 10.h),
-
-                // View Details Row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                child: Row(
                   children: [
-                    Text(
-                      "View Details",
-                      style: GoogleFonts.outfit(
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.heading,
+                    Container(
+                      width: 34.w,
+                      height: 34.w,
+                      decoration: BoxDecoration(
+                        color: accent.withOpacity(0.16),
+                        borderRadius: BorderRadius.circular(9.r),
+                      ),
+                      child: Icon(style.icon, color: accent, size: 20.sp),
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: Wrap(
+                        spacing: 6.w,
+                        runSpacing: 4.h,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          _chip(style.label.toUpperCase(), accent),
+                          if (isUrgent)
+                            _chip(
+                              priority.toUpperCase(),
+                              const Color(0xFFD93025),
+                              solid: true,
+                            ),
+                          if (item.pinned == true)
+                            _chip("PINNED", const Color(0xFF101C16)),
+                        ],
                       ),
                     ),
-                    SizedBox(width: 4.w),
-                    Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 12.sp,
-                      color: AppColors.heading,
+                    if (date.isNotEmpty)
+                      Text(
+                        date,
+                        style: GoogleFonts.outfit(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF6F7672),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(14.w, 12.h, 14.w, 12.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.title ?? "",
+                      style: GoogleFonts.outfit(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.heading,
+                        letterSpacing: -0.2,
+                        height: 1.2,
+                      ),
+                    ),
+                    SizedBox(height: 6.h),
+                    Text(
+                      item.message ?? "",
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.outfit(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w400,
+                        color: const Color.fromRGBO(42, 41, 51, 0.82),
+                        height: 1.4,
+                      ),
+                    ),
+                    SizedBox(height: 12.h),
+                    Row(
+                      children: [
+                        if (by != null && by.isNotEmpty) ...[
+                          Icon(
+                            Icons.person_outline_rounded,
+                            size: 16.sp,
+                            color: const Color(0xFF6F7672),
+                          ),
+                          SizedBox(width: 4.w),
+                          Flexible(
+                            child: Text(
+                              by,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.outfit(
+                                fontSize: 13.sp,
+                                color: const Color(0xFF6F7672),
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (hasAttachment) ...[
+                          SizedBox(width: 10.w),
+                          Icon(
+                            Icons.attach_file_rounded,
+                            size: 16.sp,
+                            color: const Color(0xFF6F7672),
+                          ),
+                          Text(
+                            "Attachment",
+                            style: GoogleFonts.outfit(
+                              fontSize: 13.sp,
+                              color: const Color(0xFF6F7672),
+                            ),
+                          ),
+                        ],
+                        const Spacer(),
+                        Text(
+                          "Read more",
+                          style: GoogleFonts.outfit(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                            color: accent,
+                          ),
+                        ),
+                        SizedBox(width: 2.w),
+                        Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 13.sp,
+                          color: accent,
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

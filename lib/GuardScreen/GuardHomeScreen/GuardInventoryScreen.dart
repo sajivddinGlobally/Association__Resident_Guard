@@ -1401,19 +1401,38 @@ class _GuardInventoryScreenState extends ConsumerState<GuardInventoryScreen> {
         ),
       ),
       SizedBox(height: 8.h),
-      OutlinedButton.icon(
-        onPressed: () => _openRequestSheet(),
-        icon: const Icon(Icons.add, color: AppColors.heading),
-        label: Text(
-          "Need something not in the list?",
-          style: GoogleFonts.outfit(fontSize: 15.sp, color: AppColors.heading),
-        ),
-        style: OutlinedButton.styleFrom(
-          side: BorderSide(color: AppColors.heading.withValues(alpha: 0.4)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.r),
+      // Inventory Request - saaf dikhne wala button (pehle halka sa "Need something...?" tha)
+      SizedBox(
+        width: double.infinity,
+        height: 48.h,
+        child: ElevatedButton.icon(
+          onPressed: () => _openRequestSheet(),
+          icon: Icon(
+            Icons.add_shopping_cart_rounded,
+            color: Colors.white,
+            size: 20.sp,
+          ),
+          label: Text(
+            "Request an Item",
+            style: GoogleFonts.outfit(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.heading,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.r),
+            ),
           ),
         ),
+      ),
+      SizedBox(height: 4.h),
+      Text(
+        "Low on something listed below? Tap \"Alert association\" on that item.",
+        style: GoogleFonts.outfit(fontSize: 13.sp, color: Colors.black54),
       ),
       SizedBox(height: 8.h),
       if (list.isEmpty)
