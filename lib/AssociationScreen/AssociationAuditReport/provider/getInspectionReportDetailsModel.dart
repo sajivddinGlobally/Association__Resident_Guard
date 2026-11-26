@@ -49,6 +49,8 @@ class Data {
   String? reportPdfUrl;
   List<DigitalChecklist>? digitalChecklist;
   Inspector? inspector;
+  // Staff App: "Inspected by <staff> · Check-in <time> · Check-out <time>" (purani report par "–")
+  String? inspectionLine;
 
   Data({
     this.id,
@@ -72,6 +74,7 @@ class Data {
     this.reportPdfUrl,
     this.digitalChecklist,
     this.inspector,
+    this.inspectionLine,
   });
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
@@ -106,6 +109,7 @@ class Data {
     inspector: json["inspector"] == null
         ? null
         : Inspector.fromJson(json["inspector"]),
+    inspectionLine: json["inspection_line"]?.toString(),
   );
 
   Map<String, dynamic> toJson() => {
@@ -132,6 +136,7 @@ class Data {
         ? []
         : List<dynamic>.from(digitalChecklist!.map((x) => x.toJson())),
     "inspector": inspector?.toJson(),
+    "inspection_line": inspectionLine,
   };
 }
 
@@ -160,12 +165,13 @@ class AttachmentsUrls {
 
   AttachmentsUrls({this.pdf, this.images});
 
-  factory AttachmentsUrls.fromJson(Map<String, dynamic> json) => AttachmentsUrls(
-    pdf: json["pdf"]?.toString(),
-    images: json["images"] == null
-        ? []
-        : List<String>.from(json["images"].map((x) => x.toString())),
-  );
+  factory AttachmentsUrls.fromJson(Map<String, dynamic> json) =>
+      AttachmentsUrls(
+        pdf: json["pdf"]?.toString(),
+        images: json["images"] == null
+            ? []
+            : List<String>.from(json["images"].map((x) => x.toString())),
+      );
 
   Map<String, dynamic> toJson() => {
     "pdf": pdf,

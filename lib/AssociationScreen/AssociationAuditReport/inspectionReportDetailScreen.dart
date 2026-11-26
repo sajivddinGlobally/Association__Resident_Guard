@@ -721,6 +721,38 @@ class _InspectionReportDetailsScreenState
                               ),
                             ],
                           ),
+
+                          // Staff App: kisne inspect kiya + check-in / check-out (purani report par "–")
+                          if ((data?.inspectionLine ?? '').isNotEmpty) ...[
+                            SizedBox(height: 12.h),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  Icons.verified_user_outlined,
+                                  size: 16.sp,
+                                  color: const Color.fromRGBO(16, 28, 22, 0.55),
+                                ),
+                                SizedBox(width: 6.w),
+                                Expanded(
+                                  child: Text(
+                                    data!.inspectionLine!,
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.w500,
+                                      color: const Color.fromRGBO(
+                                        16,
+                                        28,
+                                        22,
+                                        0.7,
+                                      ),
+                                      height: 1.35,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ],
                       ),
                     ),

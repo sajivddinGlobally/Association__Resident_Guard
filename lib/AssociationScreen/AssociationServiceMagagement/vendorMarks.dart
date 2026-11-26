@@ -9,9 +9,11 @@ import 'package:property_association_or_resident/Core/AuthService/AuthServicePro
 import 'package:property_association_or_resident/Core/Constant/appColor.dart';
 import 'package:property_association_or_resident/Core/Utils/showMessage.dart';
 
-/// Vendor Performance Marks (Association deti hai).
+/// Vendor Performance Marks - sirf Association deti hai (Admin sirf dekhta hai).
 /// Weightage FIXED: Service Quality 30 + Work Completion 30 + Response Time 20 + Issue Resolution 20 = 100.
-/// Admin panel wahi marks dikhata hai. Naya vendor society ke default marks se shuru hota hai.
+/// Naya vendor "Not rated" se shuru hota hai (society default marks HATA diye gaye).
+///   Give / Edit marks -> PUT    /committee/vendor-performance/{id}
+///   Remove marks      -> DELETE /committee/vendor-performance/{id}  (wapas "Not rated")
 
 const String _marksApi =
     "https://admin.ascentpms.care/api/v1/committee/vendor-performance";
@@ -122,8 +124,8 @@ Map<String, double> marksFromBreakdown(dynamic perf) {
   return out;
 }
 
-/// Marks dene ki sheet. vendorId == null -> society default marks.
-/// true = save ho gaya.
+/// Ek vendor ko marks dene / badalne / hatane ki sheet.
+/// true = kuch badla (save ya remove).
 Future<bool> showVendorMarksSheet(
   BuildContext context,
   WidgetRef ref, {
@@ -167,19 +169,25 @@ class _VendorMarksSheet extends ConsumerStatefulWidget {
 }
 
 class _VendorMarksSheetState extends ConsumerState<_VendorMarksSheet> {
-  late final Map<String, double> _marks;
+  /// null = abhi marks nahi bhare (Not rated vendor ka form khaali shuru hota hai, full marks se nahi)
+  late final Map<String, double?> _marks;
   final Map<String, TextEditingController> _ctrl = {};
   bool _saving = false;
+  bool _removing = false;
+
+  bool get _wasRated => widget.initial.isNotEmpty;
+  bool get _allFilled => widget.criteria.every((c) => _marks[c.key] != null);
 
   @override
   void initState() {
     super.initState();
     _marks = {
       for (final c in widget.criteria)
-        c.key: (widget.initial[c.key] ?? c.max).clamp(0, c.max).toDouble(),
+        c.key: widget.initial[c.key]?.clamp(0, c.max).toDouble(),
     };
     for (final c in widget.criteria) {
-      _ctrl[c.key] = TextEditingController(text: fmtMarks(_marks[c.key]));
+      final v = _marks[c.key];
+      _ctrl[c.key] = TextEditingController(text: v == null ? "" : fmtMarks(v));
     }
   }
 
@@ -191,7 +199,7 @@ class _VendorMarksSheetState extends ConsumerState<_VendorMarksSheet> {
     super.dispose();
   }
 
-  double get _total => _marks.values.fold(0.0, (a, b) => a + b);
+  double get _total => _marks.values.fold(0.0, (a, b) => a + (b ?? 0));
 
   void _set(MarkCriterion c, double v, {bool fromText = false}) {
     final clamped = v.clamp(0, c.max).toDouble();
@@ -201,14 +209,29 @@ class _VendorMarksSheetState extends ConsumerState<_VendorMarksSheet> {
   }
 
   Future<void> _save() async {
-    if (_saving) return;
+    if (_saving || _removing) return;
+    if (widget.vendorId == null) {
+      // Pehle id na milne par chupchaap "society default" save ho jaata tha - ab nahi
+      showErrorSnackBar(
+        "Vendor not found. Please go back and open the vendor again.",
+      );
+      return;
+    }
+    for (final c in widget.criteria) {
+      if (_marks[c.key] == null) {
+        showErrorSnackBar(
+          "${c.label} marks are required (0 to ${fmtMarks(c.max)}).",
+        );
+        return;
+      }
+    }
     setState(() => _saving = true);
     final dio = ref.read(dioProvider);
-    final url = widget.vendorId == null
-        ? "$_marksApi/default"
-        : "$_marksApi/${widget.vendorId}";
     try {
-      final res = await dio.put(url, data: _marks);
+      final res = await dio.put(
+        "$_marksApi/${widget.vendorId}",
+        data: {for (final c in widget.criteria) c.key: _marks[c.key]},
+      );
       final body = res.data;
       if (body is Map && body["status"] == true) {
         showSuccessSnackBar((body["message"] ?? "Marks saved").toString());
@@ -226,6 +249,56 @@ class _VendorMarksSheetState extends ConsumerState<_VendorMarksSheet> {
       );
     } finally {
       if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _remove() async {
+    if (_saving || _removing || widget.vendorId == null) return;
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Remove marks?"),
+        content: Text(
+          "${widget.title} will show \"Not rated\" until you give marks again.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("No"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              "Yes, remove",
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (yes != true || !mounted) return;
+    setState(() => _removing = true);
+    try {
+      final res = await ref
+          .read(dioProvider)
+          .delete("$_marksApi/${widget.vendorId}");
+      final body = res.data;
+      if (body is Map && body["status"] == true) {
+        showSuccessSnackBar((body["message"] ?? "Marks removed").toString());
+        if (mounted) Navigator.pop(context, true);
+        return;
+      }
+      showErrorSnackBar(
+        body is Map && body["message"] != null
+            ? body["message"].toString()
+            : "Could not remove marks.",
+      );
+    } catch (e) {
+      showErrorSnackBar(
+        _dioMessage(e, "Could not remove marks. Please try again."),
+      );
+    } finally {
+      if (mounted) setState(() => _removing = false);
     }
   }
 
@@ -253,9 +326,7 @@ class _VendorMarksSheetState extends ConsumerState<_VendorMarksSheet> {
               ),
               SizedBox(height: 14.h),
               Text(
-                widget.vendorId == null
-                    ? "Society Default Marks"
-                    : "Give Performance Marks",
+                _wasRated ? "Edit Performance Marks" : "Give Performance Marks",
                 style: GoogleFonts.outfit(
                   fontSize: 20.sp,
                   fontWeight: FontWeight.w700,
@@ -273,9 +344,7 @@ class _VendorMarksSheetState extends ConsumerState<_VendorMarksSheet> {
               ),
               SizedBox(height: 6.h),
               Text(
-                widget.vendorId == null
-                    ? "New vendors start with these marks until you mark them separately. Weightage is fixed."
-                    : "Weightage is fixed (30 + 30 + 20 + 20). Admin sees the marks you give.",
+                "Fill all four marks. Weightage is fixed (30 + 30 + 20 + 20). Admin sees the marks you give.",
                 style: GoogleFonts.outfit(
                   fontSize: 14.sp,
                   color: Colors.black54,
@@ -303,7 +372,7 @@ class _VendorMarksSheetState extends ConsumerState<_VendorMarksSheet> {
                     ),
                     const Spacer(),
                     Text(
-                      "${fmtMarks(_total)} / 100",
+                      _allFilled ? "${fmtMarks(_total)} / 100" : "- / 100",
                       style: GoogleFonts.outfit(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.w700,
@@ -318,7 +387,9 @@ class _VendorMarksSheetState extends ConsumerState<_VendorMarksSheet> {
                 width: double.infinity,
                 height: 50.h,
                 child: ElevatedButton(
-                  onPressed: _saving ? null : _save,
+                  onPressed: (_saving || _removing || !_allFilled)
+                      ? null
+                      : _save,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFB8860B),
                     disabledBackgroundColor: const Color(0x99B8860B),
@@ -346,6 +417,36 @@ class _VendorMarksSheetState extends ConsumerState<_VendorMarksSheet> {
                         ),
                 ),
               ),
+              if (_wasRated && widget.vendorId != null) ...[
+                SizedBox(height: 8.h),
+                Center(
+                  child: TextButton.icon(
+                    onPressed: (_saving || _removing) ? null : _remove,
+                    icon: _removing
+                        ? SizedBox(
+                            width: 16.w,
+                            height: 16.w,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.red,
+                            ),
+                          )
+                        : Icon(
+                            Icons.delete_outline,
+                            size: 18.sp,
+                            color: Colors.red,
+                          ),
+                    label: Text(
+                      "Remove marks",
+                      style: GoogleFonts.outfit(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -354,7 +455,7 @@ class _VendorMarksSheetState extends ConsumerState<_VendorMarksSheet> {
   }
 
   Widget _criterionRow(MarkCriterion c) {
-    final v = _marks[c.key] ?? 0;
+    final v = _marks[c.key] ?? 0.0;
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.fromLTRB(14.w, 10.h, 10.w, 4.h),
@@ -416,11 +517,16 @@ class _VendorMarksSheetState extends ConsumerState<_VendorMarksSheet> {
                     ),
                   ),
                   onChanged: (t) {
+                    if (t.trim().isEmpty) {
+                      setState(() => _marks[c.key] = null);
+                      return;
+                    }
                     final p = double.tryParse(t);
                     if (p != null) _set(c, p, fromText: true);
                   },
                   onEditingComplete: () {
-                    _ctrl[c.key]?.text = fmtMarks(_marks[c.key]);
+                    final cur = _marks[c.key];
+                    _ctrl[c.key]?.text = cur == null ? "" : fmtMarks(cur);
                     FocusScope.of(context).unfocus();
                   },
                 ),
@@ -442,7 +548,7 @@ class _VendorMarksSheetState extends ConsumerState<_VendorMarksSheet> {
   }
 }
 
-/// Society ke saare vendors + default marks
+/// Society ke saare vendors + unke marks
 class VendorMarksScreen extends ConsumerWidget {
   const VendorMarksScreen({super.key});
 
@@ -503,16 +609,7 @@ class VendorMarksScreen extends ConsumerWidget {
 
   Widget _body(BuildContext context, WidgetRef ref, Map<String, dynamic> data) {
     final criteria = criteriaFrom(data);
-    final def = data["society_default"] is Map
-        ? data["society_default"] as Map
-        : {};
-    final defMarks = <String, double>{};
-    if (def["marks"] is Map) {
-      (def["marks"] as Map).forEach((k, v) {
-        final d = double.tryParse("$v");
-        if (d != null) defMarks["$k"] = d;
-      });
-    }
+    final canEdit = data["can_edit"] != false;
     final vendors = (data["vendors"] is List ? data["vendors"] as List : [])
         .whereType<Map>()
         .toList();
@@ -532,110 +629,6 @@ class VendorMarksScreen extends ConsumerWidget {
           ),
         ),
         SizedBox(height: 14.h),
-        // Society default
-        Container(
-          padding: EdgeInsets.all(14.w),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: const Color(0xFFB8860B), width: 1.2),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.tune_rounded,
-                    color: const Color(0xFFB8860B),
-                    size: 22.sp,
-                  ),
-                  SizedBox(width: 8.w),
-                  Expanded(
-                    child: Text(
-                      "Society Default Marks",
-                      style: GoogleFonts.outfit(
-                        fontSize: 17.sp,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.heading,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    def["is_set"] == true
-                        ? "${fmtMarks(double.tryParse("${def["total"]}"))}/100"
-                        : "Not set",
-                    style: GoogleFonts.outfit(
-                      fontSize: 17.sp,
-                      fontWeight: FontWeight.w700,
-                      color: def["is_set"] == true
-                          ? const Color(0xFF16A34A)
-                          : Colors.black45,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 6.h),
-              Text(
-                (def["note"] ?? "A newly added vendor starts with these marks.")
-                    .toString(),
-                style: GoogleFonts.outfit(
-                  fontSize: 14.sp,
-                  color: Colors.black54,
-                ),
-              ),
-              if (defMarks.isNotEmpty) ...[
-                SizedBox(height: 8.h),
-                Wrap(
-                  spacing: 8.w,
-                  runSpacing: 6.h,
-                  children: criteria
-                      .map(
-                        (c) => _chip(
-                          "${c.label} ${fmtMarks(defMarks[c.key])}/${fmtMarks(c.max)}",
-                        ),
-                      )
-                      .toList(),
-                ),
-              ],
-              SizedBox(height: 10.h),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () async {
-                    final ok = await showVendorMarksSheet(
-                      context,
-                      ref,
-                      title:
-                          (data["complex"] is Map
-                                  ? data["complex"]["name"]
-                                  : null)
-                              ?.toString() ??
-                          "Your society",
-                      initial: defMarks,
-                      criteria: criteria,
-                    );
-                    if (ok) ref.invalidate(vendorMarksProvider);
-                  },
-                  icon: Icon(Icons.edit_outlined, size: 18.sp),
-                  label: Text(
-                    def["is_set"] == true
-                        ? "Edit Default Marks"
-                        : "Set Default Marks",
-                    style: GoogleFonts.outfit(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.heading,
-                    padding: EdgeInsets.symmetric(vertical: 10.h),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
         SizedBox(height: 18.h),
         Row(
           children: [
@@ -664,7 +657,7 @@ class VendorMarksScreen extends ConsumerWidget {
               style: GoogleFonts.outfit(fontSize: 15.sp, color: Colors.black54),
             ),
           ),
-        ...vendors.map((v) => _vendorCard(context, ref, v, criteria)),
+        ...vendors.map((v) => _vendorCard(context, ref, v, criteria, canEdit)),
       ],
     );
   }
@@ -690,6 +683,7 @@ class VendorMarksScreen extends ConsumerWidget {
     WidgetRef ref,
     Map v,
     List<MarkCriterion> criteria,
+    bool canEdit,
   ) {
     final perf = v["performance"] is Map ? v["performance"] as Map : {};
     final rated = perf["is_rated"] == true;
@@ -707,7 +701,7 @@ class VendorMarksScreen extends ConsumerWidget {
 
     return InkWell(
       borderRadius: BorderRadius.circular(12.r),
-      onTap: id == null
+      onTap: (id == null || !canEdit)
           ? null
           : () async {
               final ok = await showVendorMarksSheet(
@@ -789,26 +783,27 @@ class VendorMarksScreen extends ConsumerWidget {
                     .toList(),
               ),
             ],
-            SizedBox(height: 8.h),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Icon(
-                  Icons.edit_outlined,
-                  size: 16.sp,
-                  color: const Color(0xFFB8860B),
-                ),
-                SizedBox(width: 4.w),
-                Text(
-                  rated ? "Edit marks" : "Give marks",
-                  style: GoogleFonts.outfit(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
+            if (canEdit) SizedBox(height: 8.h),
+            if (canEdit)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Icon(
+                    Icons.edit_outlined,
+                    size: 16.sp,
                     color: const Color(0xFFB8860B),
                   ),
-                ),
-              ],
-            ),
+                  SizedBox(width: 4.w),
+                  Text(
+                    rated ? "Edit marks" : "Give marks",
+                    style: GoogleFonts.outfit(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFFB8860B),
+                    ),
+                  ),
+                ],
+              ),
           ],
         ),
       ),
